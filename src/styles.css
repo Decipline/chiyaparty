@@ -77,6 +77,18 @@
 @utility text-tea { color: var(--tea); }
 @utility bg-tea { background-color: var(--tea); }
 @utility text-leaf { color: var(--leaf); }
+@utility brand-glow {
+  text-shadow: 0 0 16px color-mix(in oklab, var(--secondary) 80%, transparent),
+               0 0 32px color-mix(in oklab, var(--secondary) 45%, transparent),
+               0 2px 4px color-mix(in oklab, black 35%, transparent);
+}
+@utility brand-highlight {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--accent) 75%, transparent);
+  box-shadow: 0 0 24px color-mix(in oklab, var(--secondary) 35%, transparent),
+              inset 0 1px 1px color-mix(in oklab, white 15%, transparent);
+}
 @utility nav-glass {
   background: var(--nav-glass-bg);
   border: 1px solid var(--nav-glass-border);
@@ -86,6 +98,7 @@
   background-color: var(--secondary);
   box-shadow: 0 0 10px var(--nav-glow-line);
 }
+
 
 @keyframes float-bulb {
   0%,100% { opacity: 0.85; transform: translateY(0); }

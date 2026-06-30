@@ -89,9 +89,9 @@ function Index() {
         <nav className="mx-auto max-w-7xl flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
             <img src={logo.url} alt="Chiya Party logo" className="h-12 w-12 rounded-full bg-white/90 p-1 shadow-warm" />
-            <div className="hidden sm:block">
-              <div className="font-display font-bold text-lg leading-none text-tea">Chiya Party</div>
-              <div className="font-script text-secondary text-sm leading-tight">कप सँग गफ</div>
+            <div className="hidden sm:block brand-highlight">
+              <div className="font-display font-bold text-lg leading-none text-white brand-glow">Chiya Party</div>
+              <div className="font-script text-secondary text-sm leading-tight brand-glow">कप सँग गफ</div>
             </div>
           </div>
           <div className="hidden md:flex items-center gap-1 rounded-full px-6 py-2.5 nav-glass backdrop-blur-xl">
