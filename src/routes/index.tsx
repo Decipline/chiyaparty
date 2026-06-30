@@ -94,11 +94,22 @@ function Index() {
               <div className="font-script text-secondary text-sm leading-tight">कप सँग गफ</div>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-7 text-sm font-medium">
-            <a href="#story" className="hover:text-primary transition">Our Story</a>
-            <a href="#gallery" className="hover:text-primary transition">Gallery</a>
-            <a href="#menu" className="hover:text-primary transition">Menu</a>
-            <a href="#visit" className="hover:text-primary transition">Visit</a>
+          <div className="hidden md:flex items-center gap-1 rounded-full px-6 py-2.5 nav-glass backdrop-blur-xl">
+            {[
+              { href: "#story", label: "Our Story" },
+              { href: "#gallery", label: "Gallery" },
+              { href: "#menu", label: "Menu" },
+              { href: "#visit", label: "Visit" },
+            ].map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className="relative group px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white/90 transition-all duration-300 hover:text-white"
+              >
+                {link.label}
+                <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-0 nav-glow-line transition-all duration-300 group-hover:w-full group-hover:left-0 rounded-full" />
+              </a>
+            ))}
           </div>
           <div className="flex items-center gap-2">
             <a href={INSTAGRAM} target="_blank" rel="noreferrer" aria-label="Instagram"
