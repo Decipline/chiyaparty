@@ -317,7 +317,7 @@ function Index() {
           <div className="font-script text-secondary text-lg">कप सँग गफ</div>
         </div>
         <div className="pt-2">
-          © {new Date().getFullYear()} Chiya Party · Made with chiya & love in Lalitpur
+          © 2026 Chiya Party · Made with chiya & love in Lalitpur
         </div>
       </footer>
     </div>
