@@ -88,7 +88,23 @@
   background: color-mix(in oklab, var(--accent) 75%, transparent);
   box-shadow: 0 0 24px color-mix(in oklab, var(--secondary) 35%, transparent),
               inset 0 1px 1px color-mix(in oklab, white 15%, transparent);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
+@utility brand-highlight:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 36px color-mix(in oklab, var(--secondary) 60%, transparent),
+              inset 0 1px 1px color-mix(in oklab, white 25%, transparent);
+  background: color-mix(in oklab, var(--accent) 90%, transparent);
+}
+
+@keyframes brand-breathe {
+  0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
+  50% { transform: translateY(-2px) scale(1.03); filter: brightness(1.08); }
+}
+@utility brand-breathe {
+  animation: brand-breathe 3.5s ease-in-out infinite;
+}
+
 @utility nav-glass {
   background: var(--nav-glass-bg);
   border: 1px solid var(--nav-glass-border);
@@ -98,6 +114,7 @@
   background-color: var(--secondary);
   box-shadow: 0 0 10px var(--nav-glow-line);
 }
+
 
 
 @keyframes float-bulb {
