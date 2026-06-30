@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 const INSTAGRAM = "https://www.instagram.com/chiya_party?igsh=ZXo3d2ZtZ2c4bmxx";
-const FACEBOOK = "https://www.facebook.com/";
+const FACEBOOK = "https://www.facebook.com/share/1GvxLofNC2/?mibextid=wwXIfr";
 
 const menu = {
   "Chiya Saathi": [
