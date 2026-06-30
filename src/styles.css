@@ -77,6 +77,15 @@
 @utility text-tea { color: var(--tea); }
 @utility bg-tea { background-color: var(--tea); }
 @utility text-leaf { color: var(--leaf); }
+@utility nav-glass {
+  background: var(--nav-glass-bg);
+  border: 1px solid var(--nav-glass-border);
+  box-shadow: var(--nav-glass-shadow);
+}
+@utility nav-glow-line {
+  background-color: var(--secondary);
+  box-shadow: 0 0 10px var(--nav-glow-line);
+}
 
 @keyframes float-bulb {
   0%,100% { opacity: 0.85; transform: translateY(0); }
