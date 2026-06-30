@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 const INSTAGRAM = "https://www.instagram.com/chiya_party?igsh=ZXo3d2ZtZ2c4bmxx";
-const FACEBOOK = "https://www.facebook.com/";
+const FACEBOOK = "https://www.facebook.com/share/1GvxLofNC2/?mibextid=wwXIfr";
 
 const menu = {
   "Chiya Saathi": [
@@ -89,7 +89,7 @@ function Index() {
         <nav className="mx-auto max-w-7xl flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-3">
             <img src={logo.url} alt="Chiya Party logo" className="h-12 w-12 rounded-full bg-white/90 p-1 shadow-warm" />
-            <div className="hidden sm:block brand-highlight">
+            <div className="hidden sm:block brand-highlight brand-breathe cursor-pointer">
               <div className="font-display font-bold text-lg leading-none text-white brand-glow">Chiya Party</div>
               <div className="font-script text-secondary text-sm leading-tight brand-glow">कप सँग गफ</div>
             </div>
