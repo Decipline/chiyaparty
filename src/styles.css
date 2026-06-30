@@ -53,6 +53,10 @@
   --gradient-sunset: linear-gradient(180deg, oklch(0.92 0.10 85) 0%, oklch(0.78 0.16 60) 100%);
   --shadow-warm: 0 20px 50px -15px color-mix(in oklab, oklch(0.55 0.15 25) 45%, transparent);
   --shadow-glow: 0 0 60px color-mix(in oklab, oklch(0.78 0.16 75) 50%, transparent);
+  --nav-glass-bg: color-mix(in oklab, white 5%, transparent);
+  --nav-glass-border: color-mix(in oklab, white 10%, transparent);
+  --nav-glass-shadow: 0 25px 50px -12px color-mix(in oklab, black 50%, transparent);
+  --nav-glow-line: color-mix(in oklab, var(--secondary) 60%, transparent);
 }
 
 @layer base {
@@ -73,6 +77,15 @@
 @utility text-tea { color: var(--tea); }
 @utility bg-tea { background-color: var(--tea); }
 @utility text-leaf { color: var(--leaf); }
+@utility nav-glass {
+  background: var(--nav-glass-bg);
+  border: 1px solid var(--nav-glass-border);
+  box-shadow: var(--nav-glass-shadow);
+}
+@utility nav-glow-line {
+  background-color: var(--secondary);
+  box-shadow: 0 0 10px var(--nav-glow-line);
+}
 
 @keyframes float-bulb {
   0%,100% { opacity: 0.85; transform: translateY(0); }
