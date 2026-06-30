@@ -12,10 +12,10 @@ import menuImg from "@/assets/Screenshot_2026-06-30_065420.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Chiya Party — कप सँग गफ | Kathmandu Garden Cafe" },
-      { name: "description", content: "Hot chiya, smoking momos, fairy lights & bamboo huts. Chiya Party — Kathmandu's coziest tea garden. कप सँग गफ!" },
+      { title: "Chiya Party — कप सँग गफ | Lalitpur Garden Cafe" },
+      { name: "description", content: "Hot chiya, smoking momos, fairy lights & bamboo huts. Chiya Party — Lalitpur's coziest tea garden. कप सँग गफ!" },
       { property: "og:title", content: "Chiya Party — कप सँग गफ" },
-      { property: "og:description", content: "Kathmandu's coziest chiya & momo garden — fairy lights, bamboo huts, marigolds, and good company." },
+      { property: "og:description", content: "Lalitpur's coziest chiya & momo garden — fairy lights, bamboo huts, marigolds, and good company." },
       { property: "og:image", content: evening1.url },
       { property: "twitter:image", content: evening1.url },
     ],
@@ -130,7 +130,7 @@ function Index() {
         <div className="relative z-10 mx-auto max-w-7xl px-5 py-32 grid md:grid-cols-12 gap-8 items-center w-full">
           <div className="md:col-span-8 text-white">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur px-4 py-1.5 text-xs uppercase tracking-[0.2em] mb-6 border border-white/20">
-              <span className="h-2 w-2 rounded-full bg-secondary animate-pulse" /> Open daily · Kathmandu
+              <span className="h-2 w-2 rounded-full bg-secondary animate-pulse" /> Open daily · Lalitpur
             </div>
             <h1 className="font-display text-5xl sm:text-7xl md:text-8xl font-extrabold leading-[0.95]">
               Sip slow.<br />
@@ -188,7 +188,7 @@ function Index() {
             <p className="font-script text-3xl text-primary">est. in good company</p>
             <h2 className="text-4xl md:text-5xl font-bold mt-2">More than a cup —<br />it's a <span className="text-primary">party</span>.</h2>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-              Tucked behind a yellow gate and a curtain of thatch, Chiya Party is where Kathmandu comes
+              Tucked behind a yellow gate and a curtain of thatch, Chiya Party is where Lalitpur comes
               to slow down. Bamboo benches, marigold pots, hanging lanterns, a guitar in the corner —
               and chiya brewed strong enough to fuel any gossip session.
             </p>
@@ -286,7 +286,7 @@ function Index() {
             </div>
             <div className="rounded-2xl bg-white/10 backdrop-blur p-6 border border-white/15">
               <div className="text-secondary text-xs uppercase tracking-widest">Where</div>
-              <div className="mt-2 font-display text-xl">Kathmandu, Nepal</div>
+              <div className="mt-2 font-display text-xl">Lalitpur, Nepal</div>
             </div>
             <div className="rounded-2xl bg-white/10 backdrop-blur p-6 border border-white/15">
               <div className="text-secondary text-xs uppercase tracking-widest">Follow</div>
@@ -310,13 +310,15 @@ function Index() {
         </div>
       </section>
 
-      <footer className="py-10 px-5 bg-background text-center text-sm text-muted-foreground">
-        <div className="flex items-center justify-center gap-3 mb-3">
-          <img src={logo.url} alt="" className="h-10 w-10 rounded-full bg-white p-1" />
-          <span className="font-display font-bold text-tea text-lg">Chiya Party</span>
-          <span className="font-script text-secondary text-lg">कप सँग गफ</span>
+      <footer className="py-10 px-5 bg-background text-center text-sm text-muted-foreground space-y-2">
+        <div className="flex flex-col items-center justify-center gap-1">
+          <img src={logo.url} alt="" className="h-10 w-10 rounded-full bg-white p-1 mb-2" />
+          <div className="font-display font-bold text-tea text-lg">Chiya Party</div>
+          <div className="font-script text-secondary text-lg">कप सँग गफ</div>
         </div>
-        © {new Date().getFullYear()} Chiya Party · Made with chiya & love in Kathmandu
+        <div className="pt-2">
+          © {new Date().getFullYear()} Chiya Party · Made with chiya & love in Lalitpur
+        </div>
       </footer>
     </div>
   );
