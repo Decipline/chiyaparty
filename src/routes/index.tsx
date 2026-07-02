@@ -308,9 +308,23 @@ function Index() {
               </div>
             </div>
           </div>
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <a href={INSTAGRAM} target="_blank" rel="noreferrer"
+          <div className="mt-12 rounded-3xl overflow-hidden border border-white/15 shadow-warm">
+            <iframe
+              title="Chiya Party location map"
+              src="https://maps.google.com/maps?q=M8Q3%2B2W6%2C%20Lalitpur%2044600%2C%20Nepal&t=&z=17&ie=UTF8&iwloc=&output=embed"
+              className="w-full h-72 sm:h-96 border-0"
+              loading="lazy"
+              allowFullScreen
+            />
+          </div>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <a href="https://www.google.com/maps/dir/?api=1&destination=M8Q3%2B2W6%2C%20Lalitpur%2044600%2C%20Nepal"
+               target="_blank" rel="noreferrer"
                className="px-7 py-3 rounded-full bg-warm font-semibold shadow-warm hover:scale-105 transition inline-flex items-center gap-2">
+              🗺️ Get Directions
+            </a>
+            <a href={INSTAGRAM} target="_blank" rel="noreferrer"
+               className="px-7 py-3 rounded-full bg-white text-tea font-semibold hover:scale-105 transition inline-flex items-center gap-2">
               <IgIcon /> Instagram
             </a>
             <a href={FACEBOOK} target="_blank" rel="noreferrer"
