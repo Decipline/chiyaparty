@@ -12,6 +12,8 @@ type LovableEvents = {
   ) => void;
 };
 
+let globalErrorLoggingInstalled = false;
+
 declare global {
   interface Window {
     __lovableEvents?: LovableEvents;
@@ -33,4 +35,27 @@ export function reportLovableError(error: unknown, context: Record<string, unkno
       severity: "error",
     },
   );
+}
+
+export function logAndReportError(error: unknown, context: Record<string, unknown> = {}) {
+  console.error("[Chiya Party]", context.boundary ?? "app_error", error);
+  reportLovableError(error, context);
+}
+
+export function installGlobalErrorLogging() {
+  if (typeof window === "undefined" || globalErrorLoggingInstalled) return;
+  globalErrorLoggingInstalled = true;
+
+  window.addEventListener("error", (event) => {
+    logAndReportError(event.error ?? event.message, {
+      boundary: "window_error",
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    logAndReportError(event.reason, { boundary: "window_unhandledrejection" });
+  });
 }
