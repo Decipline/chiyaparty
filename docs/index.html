@@ -2,56 +2,80 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>window.location.replace("https://chai-vibes-gallery.lovable.app/");</script>
     <meta http-equiv="refresh" content="0;url=https://chai-vibes-gallery.lovable.app/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="canonical" href="https://chai-vibes-gallery.lovable.app/" />
     <link rel="preconnect" href="https://chai-vibes-gallery.lovable.app" />
-    <script>
-      window.location.replace("https://chai-vibes-gallery.lovable.app/");
-    </script>
-    <title>Chiya Party — Redirecting</title>
-    <meta name="description" content="Redirecting to the live Chiya Party website." />
+    <title>Chiya Party — कप सँग गफ</title>
+    <meta name="description" content="Redirecting to Chiya Party — Lalitpur's coziest chiya garden." />
+    <meta property="og:title" content="Chiya Party — कप सँग गफ" />
+    <meta property="og:description" content="Lalitpur's coziest chiya & momo garden." />
+    <meta property="og:url" content="https://chai-vibes-gallery.lovable.app/" />
+    <meta name="twitter:card" content="summary_large_image" />
     <style>
       :root { color-scheme: light; }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; min-height: 100%; }
+      html, body { margin: 0; height: 100%; }
       body {
-        min-height: 100vh;
+        background: radial-gradient(ellipse at top, #f5c76a 0%, #d97742 45%, #6b1f10 100%);
+        color: #fff8ee;
+        font-family: ui-serif, Georgia, "Times New Roman", serif;
         display: grid;
         place-items: center;
+        text-align: center;
         padding: 1.5rem;
-        background: linear-gradient(135deg, #f5c76a 0%, #d97742 50%, #8b2f1a 100%);
-        color: #2a1810;
-        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
       }
       .card {
-        width: min(100%, 30rem);
-        text-align: center;
-        border-radius: 1.5rem;
-        background: rgba(255, 250, 240, 0.94);
-        padding: 2.25rem 1.5rem;
-        box-shadow: 0 20px 60px -15px rgba(80, 20, 10, 0.5);
+        max-width: 24rem;
+        opacity: 0;
+        animation: fade 400ms ease 250ms forwards;
       }
-      h1 { margin: 0 0 0.25rem; font-size: 2rem; }
-      .sub { margin-bottom: 1rem; color: #8b2f1a; font-size: 1.25rem; }
-      p { margin: 0 0 1.25rem; color: #5a3520; line-height: 1.5; }
-      .btn {
+      @keyframes fade { to { opacity: 1; } }
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 6vw, 2.75rem);
+        letter-spacing: -0.02em;
+        text-shadow: 0 2px 20px rgba(0,0,0,0.35);
+      }
+      .sub {
+        margin: 0.35rem 0 1.5rem;
+        font-size: 1.15rem;
+        color: #ffe6b8;
+        letter-spacing: 0.02em;
+      }
+      .dot {
         display: inline-block;
+        width: 8px; height: 8px;
+        margin: 0 3px;
+        border-radius: 50%;
+        background: #fff8ee;
+        opacity: 0.4;
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+      .dot:nth-child(2) { animation-delay: 0.2s; }
+      .dot:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes pulse { 50% { opacity: 1; transform: translateY(-3px); } }
+      a {
+        display: inline-block;
+        margin-top: 1.25rem;
+        padding: 0.7rem 1.4rem;
         border-radius: 9999px;
-        background: #8b2f1a;
-        color: #fff8ee;
-        padding: 0.8rem 1.5rem;
-        font-weight: 700;
+        background: #fff8ee;
+        color: #6b1f10;
         text-decoration: none;
+        font-weight: 700;
+        font-family: system-ui, sans-serif;
+        font-size: 0.9rem;
       }
     </style>
   </head>
   <body>
+    <noscript><meta http-equiv="refresh" content="0;url=https://chai-vibes-gallery.lovable.app/" /></noscript>
     <main class="card">
       <h1>Chiya Party</h1>
-      <div class="sub">कप सँग गफ</div>
-      <p>Redirecting to the live website now.</p>
-      <a class="btn" href="https://chai-vibes-gallery.lovable.app/">Visit Chiya Party</a>
+      <p class="sub">कप सँग गफ</p>
+      <div aria-hidden="true"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <a href="https://chai-vibes-gallery.lovable.app/">Continue →</a>
     </main>
   </body>
 </html>
