@@ -288,7 +288,7 @@ function Index() {
             see why Lalitpur can't stop talking about Chiya Party.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <a href="#gallery"
+            <a href="#gallery" onClick={(e) => scrollToId(e, "gallery")}
                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-secondary text-white font-bold text-lg shadow-warm hover:scale-105 transition">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
               View the Photos
