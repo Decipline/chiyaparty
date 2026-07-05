@@ -215,6 +215,35 @@ function Index() {
         </div>
       </section>
 
+      {/* CTA BANNER */}
+      <section className="relative py-16 px-5 overflow-hidden bg-warm">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <img src={evening2.url} alt="" className="w-full h-full object-cover" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/40" />
+        <div className="relative mx-auto max-w-5xl text-center text-white">
+          <p className="font-script text-3xl sm:text-4xl text-secondary">catch the glow before the cup cools</p>
+          <h2 className="text-3xl sm:text-5xl font-bold mt-2 leading-tight">
+            Watch the garden come alive.<br className="hidden sm:block" /> Scroll the vibes.
+          </h2>
+          <p className="mt-4 text-white/90 max-w-2xl mx-auto text-lg">
+            Fairy lights, bamboo huts, marigold corners, and the steam rising off every cup —
+            see why Lalitpur can't stop talking about Chiya Party.
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <a href="#gallery"
+               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-secondary text-white font-bold text-lg shadow-warm hover:scale-105 transition">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
+              View the Photos
+            </a>
+            <a href={INSTAGRAM} target="_blank" rel="noreferrer"
+               className="inline-flex items-center gap-2 px-7 py-4 rounded-full bg-white text-tea font-bold text-lg hover:scale-105 transition">
+              <IgIcon className="h-5 w-5" /> Watch on Instagram
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* GALLERY */}
       <section id="gallery" className="py-24 px-5 bg-sunset">
         <div className="mx-auto max-w-7xl">
