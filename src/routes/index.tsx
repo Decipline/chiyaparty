@@ -342,21 +342,12 @@ function Index() {
             <h2 className="text-4xl md:text-5xl font-bold">The Menu</h2>
             <p className="mt-3 text-muted-foreground">All prices in NPR · Served fresh, all day</p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Object.entries(menu).map(([cat, items]) => (
-              <div key={cat} className="rounded-3xl bg-card p-7 shadow-warm border border-border">
-                <h3 className="font-display text-3xl text-primary italic mb-5 underline decoration-secondary decoration-4 underline-offset-4">{cat}</h3>
-                <ul className="divide-y divide-border">
-                  {items.map(([name, price]) => (
-                    <li key={name} className="flex items-baseline justify-between gap-4 py-2.5">
-                      <span className="font-medium">{name}</span>
-                      <span className="font-display font-bold text-tea tabular-nums whitespace-nowrap">{price}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <MenuFlipCard key={cat} cat={cat} items={items as [string, string][]} image={menuImages[cat]} />
             ))}
           </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">Hover or tap any card to see the dish.</p>
           <div className="mt-10 text-center">
             <a href={menuImg.url} target="_blank" rel="noreferrer"
                className="text-sm font-medium text-primary hover:underline">View original menu card →</a>
