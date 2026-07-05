@@ -130,3 +130,9 @@
   100% { opacity: 0; transform: translateY(-30px) scaleX(1.4); }
 }
 @utility animate-steam { animation: steam 2.5s ease-out infinite; }
+
+/* Flip card (menu) */
+@utility perspective-1200 { perspective: 1200px; }
+@utility preserve-3d { transform-style: preserve-3d; }
+@utility backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+@utility rotate-y-180 { transform: rotateY(180deg); }
