@@ -8,6 +8,63 @@ import thatch from "@/assets/Screenshot_2026-06-30_065644.asset.json";
 import night1 from "@/assets/Screenshot_2026-06-30_065624.asset.json";
 import counter from "@/assets/Screenshot_2026-06-30_065601.asset.json";
 import menuImg from "@/assets/Screenshot_2026-06-30_065420.asset.json";
+import menuChiyaSaathi from "@/assets/menu-chiya-saathi.jpg";
+import menuSnacks from "@/assets/menu-snacks.jpg";
+import menuDessert from "@/assets/menu-dessert.jpg";
+import { useState } from "react";
+
+const menuImages: Record<string, string> = {
+  "Chiya Saathi": menuChiyaSaathi,
+  "Snacks": menuSnacks,
+  "Dessert": menuDessert,
+};
+
+function scrollToId(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
+  const el = document.getElementById(id);
+  if (el) {
+    e.preventDefault();
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    history.replaceState(null, "", `#${id}`);
+  }
+}
+
+function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, string][]; image: string }) {
+  const [flipped, setFlipped] = useState(false);
+  return (
+    <div
+      className="perspective-1200 h-[560px] cursor-pointer group"
+      onClick={() => setFlipped((f) => !f)}
+      onMouseEnter={() => setFlipped(true)}
+      onMouseLeave={() => setFlipped(false)}
+    >
+      <div className={`relative w-full h-full preserve-3d transition-transform duration-700 ease-out ${flipped ? "rotate-y-180" : ""}`}>
+        {/* FRONT */}
+        <div className="absolute inset-0 backface-hidden rounded-3xl bg-card p-7 shadow-warm border border-border overflow-hidden">
+          <div className="absolute top-3 right-4 text-[10px] uppercase tracking-widest text-muted-foreground opacity-70">tap to flip</div>
+          <h3 className="font-display text-3xl text-primary italic mb-5 underline decoration-secondary decoration-4 underline-offset-4">{cat}</h3>
+          <ul className="divide-y divide-border">
+            {items.map(([name, price]) => (
+              <li key={name} className="flex items-baseline justify-between gap-4 py-2.5">
+                <span className="font-medium">{name}</span>
+                <span className="font-display font-bold text-tea tabular-nums whitespace-nowrap">{price}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {/* BACK */}
+        <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-warm border border-border">
+          <img src={image} alt={`${cat} spread`} loading="lazy" width={1024} height={1024} className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-7 text-white">
+            <p className="font-script text-2xl text-secondary">served hot</p>
+            <h3 className="font-display text-4xl italic">{cat}</h3>
+            <p className="mt-2 text-white/85 text-sm">Fresh from our garden kitchen — tap to flip back.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -231,7 +288,7 @@ function Index() {
             see why Lalitpur can't stop talking about Chiya Party.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <a href="#gallery"
+            <a href="#gallery" onClick={(e) => scrollToId(e, "gallery")}
                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-secondary text-white font-bold text-lg shadow-warm hover:scale-105 transition">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
               View the Photos
@@ -285,21 +342,12 @@ function Index() {
             <h2 className="text-4xl md:text-5xl font-bold">The Menu</h2>
             <p className="mt-3 text-muted-foreground">All prices in NPR · Served fresh, all day</p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Object.entries(menu).map(([cat, items]) => (
-              <div key={cat} className="rounded-3xl bg-card p-7 shadow-warm border border-border">
-                <h3 className="font-display text-3xl text-primary italic mb-5 underline decoration-secondary decoration-4 underline-offset-4">{cat}</h3>
-                <ul className="divide-y divide-border">
-                  {items.map(([name, price]) => (
-                    <li key={name} className="flex items-baseline justify-between gap-4 py-2.5">
-                      <span className="font-medium">{name}</span>
-                      <span className="font-display font-bold text-tea tabular-nums whitespace-nowrap">{price}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <MenuFlipCard key={cat} cat={cat} items={items as [string, string][]} image={menuImages[cat]} />
             ))}
           </div>
+          <p className="mt-6 text-center text-sm text-muted-foreground">Hover or tap any card to see the dish.</p>
           <div className="mt-10 text-center">
             <a href={menuImg.url} target="_blank" rel="noreferrer"
                className="text-sm font-medium text-primary hover:underline">View original menu card →</a>
