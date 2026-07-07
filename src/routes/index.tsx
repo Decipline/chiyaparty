@@ -11,7 +11,7 @@ import menuImg from "@/assets/Screenshot_2026-06-30_065420.asset.json";
 import menuChiyaSaathi from "@/assets/menu-chiya-saathi.jpg";
 import menuSnacks from "@/assets/menu-snacks.jpg";
 import menuDessert from "@/assets/menu-dessert.jpg";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const menuImages: Record<string, string> = {
