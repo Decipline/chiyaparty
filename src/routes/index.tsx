@@ -11,7 +11,8 @@ import menuImg from "@/assets/Screenshot_2026-06-30_065420.asset.json";
 import menuChiyaSaathi from "@/assets/menu-chiya-saathi.jpg";
 import menuSnacks from "@/assets/menu-snacks.jpg";
 import menuDessert from "@/assets/menu-dessert.jpg";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const menuImages: Record<string, string> = {
   "Chiya Saathi": menuChiyaSaathi,
@@ -30,18 +31,28 @@ function scrollToId(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
 
 function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, string][]; image: string }) {
   const [flipped, setFlipped] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const isMobile = useIsMobile();
   return (
     <div
-      className="perspective-1200 h-[560px] cursor-pointer group"
+      className="perspective-1200 h-[560px] cursor-pointer group select-none"
       onClick={() => setFlipped((f) => !f)}
-      onMouseEnter={() => setFlipped(true)}
-      onMouseLeave={() => setFlipped(false)}
+      onMouseEnter={() => { if (!isMobile) setFlipped(true); }}
+      onMouseLeave={() => { if (!isMobile) setFlipped(false); }}
+      role="button"
+      tabIndex={0}
+      aria-pressed={flipped}
+      aria-label={`${cat} — tap to ${flipped ? "see menu" : "see the dish"}`}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setFlipped((f) => !f); } }}
     >
       <div className={`relative w-full h-full preserve-3d transition-transform duration-700 ease-out ${flipped ? "rotate-y-180" : ""}`}>
         {/* FRONT */}
         <div className="absolute inset-0 backface-hidden rounded-3xl bg-card p-7 shadow-warm border border-border overflow-hidden">
-          <div className="absolute top-3 right-4 text-[10px] uppercase tracking-widest text-muted-foreground opacity-70">tap to flip</div>
-          <h3 className="font-display text-3xl text-primary italic mb-5 underline decoration-secondary decoration-4 underline-offset-4">{cat}</h3>
+          <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-secondary/90 text-tea text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 shadow-warm animate-pulse">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-3 w-3" aria-hidden><path d="M9 11V6a3 3 0 1 1 6 0v5"/><path d="M12 11v10"/><path d="M8 17l4 4 4-4"/></svg>
+            Tap to flip
+          </span>
+          <h3 className="font-display text-3xl text-primary italic mb-5 underline decoration-secondary decoration-4 underline-offset-4 pr-24">{cat}</h3>
           <ul className="divide-y divide-border">
             {items.map(([name, price]) => (
               <li key={name} className="flex items-baseline justify-between gap-4 py-2.5">
@@ -52,16 +63,70 @@ function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, stri
           </ul>
         </div>
         {/* BACK */}
-        <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-warm border border-border">
-          <img src={image} alt={`${cat} spread`} loading="lazy" width={1024} height={1024} className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-warm border border-border bg-muted">
+          {!loaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-muted via-secondary/20 to-muted animate-pulse flex items-center justify-center">
+              <span className="font-script text-2xl text-muted-foreground">brewing…</span>
+            </div>
+          )}
+          <img
+            src={image}
+            alt={`${cat} spread`}
+            loading="lazy"
+            decoding="async"
+            width={1024}
+            height={1024}
+            onLoad={() => setLoaded(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 text-tea text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 shadow-warm">
+            Tap to flip back
+          </span>
           <div className="absolute inset-x-0 bottom-0 p-7 text-white">
             <p className="font-script text-2xl text-secondary">served hot</p>
             <h3 className="font-display text-4xl italic">{cat}</h3>
-            <p className="mt-2 text-white/85 text-sm">Fresh from our garden kitchen — tap to flip back.</p>
+            <p className="mt-2 text-white/85 text-sm">Fresh from our garden kitchen.</p>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+type GalleryImg = { src: string; alt: string; cls?: string };
+
+function Lightbox({ images, index, onClose, onPrev, onNext }: {
+  images: GalleryImg[]; index: number; onClose: () => void; onPrev: () => void; onNext: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight") onNext();
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [onClose, onPrev, onNext]);
+
+  const img = images[index];
+  return (
+    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-label="Photo viewer">
+      <button onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Close" className="absolute top-4 right-4 h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <button onClick={(e) => { e.stopPropagation(); onPrev(); }} aria-label="Previous" className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button onClick={(e) => { e.stopPropagation(); onNext(); }} aria-label="Next" className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <figure className="relative max-w-[95vw] max-h-[90vh] animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <img src={img.src} alt={img.alt} className="max-w-[95vw] max-h-[85vh] object-contain rounded-xl shadow-warm" />
+        <figcaption className="mt-3 text-center text-white/80 text-sm">{img.alt} · {index + 1} / {images.length}</figcaption>
+      </figure>
     </div>
   );
 }
@@ -139,6 +204,20 @@ function FbIcon({ className = "h-5 w-5" }: { className?: string }) {
 }
 
 function Index() {
+  const galleryImages: GalleryImg[] = [
+    { src: evening1.url, alt: "Bamboo seating at dusk under string lights", cls: "col-span-2 row-span-2" },
+    { src: thatch.url, alt: "Thatched roof with hanging kerosene lantern", cls: "" },
+    { src: night1.url, alt: "Guests gathered at night with guitar", cls: "col-span-2" },
+    { src: counter.url, alt: "Chiya counter glowing red at evening", cls: "" },
+    { src: evening2.url, alt: "Wrapped tree lights and bamboo fence", cls: "col-span-2" },
+    { src: day.url, alt: "Marigold pots and bamboo garden in daylight", cls: "" },
+    { src: entrance.url, alt: "Yellow gate entrance with Chiya Party banner", cls: "" },
+  ];
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const closeLightbox = () => setLightboxIndex(null);
+  const prevImg = () => setLightboxIndex((i) => (i === null ? i : (i - 1 + galleryImages.length) % galleryImages.length));
+  const nextImg = () => setLightboxIndex((i) => (i === null ? i : (i + 1) % galleryImages.length));
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
       {/* Top bar */}
@@ -309,20 +388,22 @@ function Index() {
             <h2 className="text-4xl md:text-5xl font-bold">The Vibe, Captured</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[180px] md:auto-rows-[220px]">
-            {[
-              { src: evening1.url, alt: "Bamboo seating at dusk under string lights", cls: "col-span-2 row-span-2" },
-              { src: thatch.url, alt: "Thatched roof with hanging kerosene lantern", cls: "" },
-              { src: night1.url, alt: "Guests gathered at night with guitar", cls: "col-span-2" },
-              { src: counter.url, alt: "Chiya counter glowing red at evening", cls: "" },
-              { src: evening2.url, alt: "Wrapped tree lights and bamboo fence", cls: "col-span-2" },
-              { src: day.url, alt: "Marigold pots and bamboo garden in daylight", cls: "" },
-              { src: entrance.url, alt: "Yellow gate entrance with Chiya Party banner", cls: "" },
-            ].map((img) => (
-              <figure key={img.src} className={`group relative overflow-hidden rounded-2xl shadow-warm ${img.cls}`}>
+            {galleryImages.map((img, i) => (
+              <button
+                key={img.src}
+                type="button"
+                onClick={() => setLightboxIndex(i)}
+                aria-label={`Open image: ${img.alt}`}
+                className={`group relative overflow-hidden rounded-2xl shadow-warm text-left focus:outline-none focus:ring-4 focus:ring-secondary/60 ${img.cls}`}
+              >
                 <img src={img.src} alt={img.alt} loading="lazy"
                      className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition" />
-              </figure>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition" />
+                <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 text-tea text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 opacity-0 group-hover:opacity-100 transition">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+                  View
+                </span>
+              </button>
             ))}
           </div>
           <div className="text-center mt-10">
@@ -347,7 +428,7 @@ function Index() {
               <MenuFlipCard key={cat} cat={cat} items={items as [string, string][]} image={menuImages[cat]} />
             ))}
           </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">Hover or tap any card to see the dish.</p>
+          <p className="mt-6 text-center text-sm text-muted-foreground">👆 Tap any card to flip and see the dish.</p>
           <div className="mt-10 text-center">
             <a href={menuImg.url} target="_blank" rel="noreferrer"
                className="text-sm font-medium text-primary hover:underline">View original menu card →</a>
@@ -422,6 +503,16 @@ function Index() {
           © 2026 Chiya Party · Made with chiya & love in Lalitpur
         </div>
       </footer>
+
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={galleryImages}
+          index={lightboxIndex}
+          onClose={closeLightbox}
+          onPrev={prevImg}
+          onNext={nextImg}
+        />
+      )}
     </div>
   );
 }
