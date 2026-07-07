@@ -388,20 +388,22 @@ function Index() {
             <h2 className="text-4xl md:text-5xl font-bold">The Vibe, Captured</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[180px] md:auto-rows-[220px]">
-            {[
-              { src: evening1.url, alt: "Bamboo seating at dusk under string lights", cls: "col-span-2 row-span-2" },
-              { src: thatch.url, alt: "Thatched roof with hanging kerosene lantern", cls: "" },
-              { src: night1.url, alt: "Guests gathered at night with guitar", cls: "col-span-2" },
-              { src: counter.url, alt: "Chiya counter glowing red at evening", cls: "" },
-              { src: evening2.url, alt: "Wrapped tree lights and bamboo fence", cls: "col-span-2" },
-              { src: day.url, alt: "Marigold pots and bamboo garden in daylight", cls: "" },
-              { src: entrance.url, alt: "Yellow gate entrance with Chiya Party banner", cls: "" },
-            ].map((img) => (
-              <figure key={img.src} className={`group relative overflow-hidden rounded-2xl shadow-warm ${img.cls}`}>
+            {galleryImages.map((img, i) => (
+              <button
+                key={img.src}
+                type="button"
+                onClick={() => setLightboxIndex(i)}
+                aria-label={`Open image: ${img.alt}`}
+                className={`group relative overflow-hidden rounded-2xl shadow-warm text-left focus:outline-none focus:ring-4 focus:ring-secondary/60 ${img.cls}`}
+              >
                 <img src={img.src} alt={img.alt} loading="lazy"
                      className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition" />
-              </figure>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition" />
+                <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 text-tea text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 opacity-0 group-hover:opacity-100 transition">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
+                  View
+                </span>
+              </button>
             ))}
           </div>
           <div className="text-center mt-10">
