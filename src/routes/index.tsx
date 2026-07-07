@@ -428,7 +428,7 @@ function Index() {
               <MenuFlipCard key={cat} cat={cat} items={items as [string, string][]} image={menuImages[cat]} />
             ))}
           </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">Hover or tap any card to see the dish.</p>
+          <p className="mt-6 text-center text-sm text-muted-foreground">👆 Tap any card to flip and see the dish.</p>
           <div className="mt-10 text-center">
             <a href={menuImg.url} target="_blank" rel="noreferrer"
                className="text-sm font-medium text-primary hover:underline">View original menu card →</a>
