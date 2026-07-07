@@ -204,6 +204,20 @@ function FbIcon({ className = "h-5 w-5" }: { className?: string }) {
 }
 
 function Index() {
+  const galleryImages: GalleryImg[] = [
+    { src: evening1.url, alt: "Bamboo seating at dusk under string lights", cls: "col-span-2 row-span-2" },
+    { src: thatch.url, alt: "Thatched roof with hanging kerosene lantern", cls: "" },
+    { src: night1.url, alt: "Guests gathered at night with guitar", cls: "col-span-2" },
+    { src: counter.url, alt: "Chiya counter glowing red at evening", cls: "" },
+    { src: evening2.url, alt: "Wrapped tree lights and bamboo fence", cls: "col-span-2" },
+    { src: day.url, alt: "Marigold pots and bamboo garden in daylight", cls: "" },
+    { src: entrance.url, alt: "Yellow gate entrance with Chiya Party banner", cls: "" },
+  ];
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const closeLightbox = () => setLightboxIndex(null);
+  const prevImg = () => setLightboxIndex((i) => (i === null ? i : (i - 1 + galleryImages.length) % galleryImages.length));
+  const nextImg = () => setLightboxIndex((i) => (i === null ? i : (i + 1) % galleryImages.length));
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
       {/* Top bar */}
