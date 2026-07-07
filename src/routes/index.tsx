@@ -503,6 +503,16 @@ function Index() {
           © 2026 Chiya Party · Made with chiya & love in Lalitpur
         </div>
       </footer>
+
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={galleryImages}
+          index={lightboxIndex}
+          onClose={closeLightbox}
+          onPrev={prevImg}
+          onNext={nextImg}
+        />
+      )}
     </div>
   );
 }
