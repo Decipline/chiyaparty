@@ -11,7 +11,7 @@ import menuImg from "@/assets/Screenshot_2026-06-30_065420.asset.json";
 import menuChiyaSaathi from "@/assets/menu-chiya-saathi.jpg";
 import menuSnacks from "@/assets/menu-snacks.jpg";
 import menuDessert from "@/assets/menu-dessert.jpg";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const menuImages: Record<string, string> = {
@@ -70,6 +70,7 @@ function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, stri
             </div>
           )}
           <img
+            ref={(el) => { if (el && el.complete && el.naturalWidth > 0) setLoaded(true); }}
             src={image}
             alt={`${cat} spread`}
             loading="lazy"
@@ -77,6 +78,7 @@ function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, stri
             width={1024}
             height={1024}
             onLoad={() => setLoaded(true)}
+            onError={() => setLoaded(true)}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
@@ -99,29 +101,95 @@ type GalleryImg = { src: string; alt: string; cls?: string };
 function Lightbox({ images, index, onClose, onPrev, onNext }: {
   images: GalleryImg[]; index: number; onClose: () => void; onPrev: () => void; onNext: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const descId = useId();
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") onPrev();
-      if (e.key === "ArrowRight") onNext();
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    closeBtnRef.current?.focus();
+
+    const getFocusable = () => {
+      if (!dialogRef.current) return [] as HTMLElement[];
+      return Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null);
     };
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
+      if (e.key === "ArrowLeft") { e.preventDefault(); onPrev(); return; }
+      if (e.key === "ArrowRight") { e.preventDefault(); onNext(); return; }
+      if (e.key === "Tab") {
+        const focusable = getFocusable();
+        if (focusable.length === 0) { e.preventDefault(); return; }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (e.shiftKey && (active === first || !dialogRef.current?.contains(active))) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
     window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
+    const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      previouslyFocused?.focus?.();
+    };
   }, [onClose, onPrev, onNext]);
 
   const img = images[index];
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-label="Photo viewer">
-      <button onClick={(e) => { e.stopPropagation(); onClose(); }} aria-label="Close" className="absolute top-4 right-4 h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    <div
+      ref={dialogRef}
+      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descId}
+    >
+      <h2 id={titleId} className="sr-only">Photo viewer</h2>
+      <p id={descId} className="sr-only">
+        Use the left and right arrow keys to navigate between photos. Press Escape to close.
+      </p>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        Photo {index + 1} of {images.length}: {img.alt}
+      </div>
+      <button
+        ref={closeBtnRef}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        aria-label="Close photo viewer"
+        className="absolute top-4 right-4 h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
-      <button onClick={(e) => { e.stopPropagation(); onPrev(); }} aria-label="Previous" className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6"><path d="M15 18l-6-6 6-6"/></svg>
+      <button
+        onClick={(e) => { e.stopPropagation(); onPrev(); }}
+        aria-label="Previous photo"
+        aria-keyshortcuts="ArrowLeft"
+        className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M15 18l-6-6 6-6"/></svg>
       </button>
-      <button onClick={(e) => { e.stopPropagation(); onNext(); }} aria-label="Next" className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6"><path d="M9 6l6 6-6 6"/></svg>
+      <button
+        onClick={(e) => { e.stopPropagation(); onNext(); }}
+        aria-label="Next photo"
+        aria-keyshortcuts="ArrowRight"
+        className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M9 6l6 6-6 6"/></svg>
       </button>
       <figure className="relative max-w-[95vw] max-h-[90vh] animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <img src={img.src} alt={img.alt} className="max-w-[95vw] max-h-[85vh] object-contain rounded-xl shadow-warm" />
