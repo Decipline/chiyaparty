@@ -70,6 +70,7 @@ function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, stri
             </div>
           )}
           <img
+            ref={(el) => { if (el && el.complete && el.naturalWidth > 0) setLoaded(true); }}
             src={image}
             alt={`${cat} spread`}
             loading="lazy"
@@ -77,6 +78,7 @@ function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, stri
             width={1024}
             height={1024}
             onLoad={() => setLoaded(true)}
+            onError={() => setLoaded(true)}
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
