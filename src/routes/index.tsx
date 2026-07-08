@@ -20,6 +20,16 @@ const menuImages: Record<string, string> = {
   "Dessert": menuDessert,
 };
 
+// Preload every flip-card image as soon as the module loads so the back face
+// is already decoded before the user hovers/taps. Runs only in the browser.
+if (typeof window !== "undefined") {
+  Object.values(menuImages).forEach((src) => {
+    const img = new Image();
+    img.decoding = "async";
+    img.src = src;
+  });
+}
+
 function scrollToId(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
   const el = document.getElementById(id);
   if (el) {
@@ -32,7 +42,30 @@ function scrollToId(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
 function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, string][]; image: string }) {
   const [flipped, setFlipped] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const isMobile = useIsMobile();
+
+  // Warm the browser cache the moment this card mounts so the image is ready
+  // before the first flip, even on slow mobile connections.
+  useEffect(() => {
+    const pre = new Image();
+    pre.decoding = "async";
+    pre.onload = () => setLoaded(true);
+    pre.onerror = () => setFailed(true);
+    pre.src = image;
+  }, [image, attempt]);
+
+  const retry = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    e?.stopPropagation();
+    setFailed(false);
+    setLoaded(false);
+    setAttempt((a) => a + 1);
+  };
+
+  // Cache-bust on retry so a previously-failed request isn't served from cache.
+  const imgSrc = attempt === 0 ? image : `${image}${image.includes("?") ? "&" : "?"}r=${attempt}`;
+
   return (
     <div
       className="perspective-1200 h-[560px] cursor-pointer group select-none"
@@ -64,23 +97,43 @@ function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, stri
         </div>
         {/* BACK */}
         <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-warm border border-border bg-muted">
-          {!loaded && (
-            <div className="absolute inset-0 bg-gradient-to-br from-muted via-secondary/20 to-muted animate-pulse flex items-center justify-center">
+          {/* Skeleton placeholder — visible until the image resolves or fails */}
+          {!loaded && !failed && (
+            <div className="absolute inset-0 bg-gradient-to-br from-muted via-secondary/25 to-muted animate-pulse flex flex-col items-center justify-center gap-3" aria-hidden>
+              <svg className="h-8 w-8 animate-spin text-tea/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="9" opacity="0.25" />
+                <path d="M21 12a9 9 0 0 0-9-9" strokeLinecap="round" />
+              </svg>
               <span className="font-script text-2xl text-muted-foreground">brewing…</span>
+              <span className="sr-only" role="status" aria-live="polite">Loading {cat} photo</span>
+            </div>
+          )}
+          {/* Error state — offer a retry */}
+          {failed && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-muted p-6 text-center">
+              <span className="font-script text-2xl text-muted-foreground">Couldn't brew this photo.</span>
+              <button
+                type="button"
+                onClick={retry}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); retry(e); } }}
+                className="rounded-full bg-tea px-4 py-2 text-sm font-bold uppercase tracking-widest text-white shadow-warm hover:bg-tea/90 focus-visible:ring-4 focus-visible:ring-secondary"
+              >
+                Try again
+              </button>
             </div>
           )}
           <img
-            ref={(el) => { if (el && el.complete && el.naturalWidth > 0) setLoaded(true); }}
-            src={image}
+            key={attempt}
+            src={imgSrc}
             alt={`${cat} spread`}
-            loading="lazy"
             decoding="async"
             width={1024}
             height={1024}
-            onLoad={() => setLoaded(true)}
-            onError={() => setLoaded(true)}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+            onLoad={() => { setLoaded(true); setFailed(false); }}
+            onError={() => setFailed(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${loaded && !failed ? "opacity-100" : "opacity-0"}`}
           />
+
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
           <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 text-tea text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 shadow-warm">
             Tap to flip back
