@@ -20,6 +20,16 @@ const menuImages: Record<string, string> = {
   "Dessert": menuDessert,
 };
 
+// Preload every flip-card image as soon as the module loads so the back face
+// is already decoded before the user hovers/taps. Runs only in the browser.
+if (typeof window !== "undefined") {
+  Object.values(menuImages).forEach((src) => {
+    const img = new Image();
+    img.decoding = "async";
+    img.src = src;
+  });
+}
+
 function scrollToId(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
   const el = document.getElementById(id);
   if (el) {
