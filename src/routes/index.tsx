@@ -42,7 +42,30 @@ function scrollToId(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
 function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, string][]; image: string }) {
   const [flipped, setFlipped] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const isMobile = useIsMobile();
+
+  // Warm the browser cache the moment this card mounts so the image is ready
+  // before the first flip, even on slow mobile connections.
+  useEffect(() => {
+    const pre = new Image();
+    pre.decoding = "async";
+    pre.onload = () => setLoaded(true);
+    pre.onerror = () => setFailed(true);
+    pre.src = image;
+  }, [image, attempt]);
+
+  const retry = (e?: React.MouseEvent | React.KeyboardEvent) => {
+    e?.stopPropagation();
+    setFailed(false);
+    setLoaded(false);
+    setAttempt((a) => a + 1);
+  };
+
+  // Cache-bust on retry so a previously-failed request isn't served from cache.
+  const imgSrc = attempt === 0 ? image : `${image}${image.includes("?") ? "&" : "?"}r=${attempt}`;
+
   return (
     <div
       className="perspective-1200 h-[560px] cursor-pointer group select-none"
