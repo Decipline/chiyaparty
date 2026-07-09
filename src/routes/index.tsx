@@ -12,23 +12,6 @@ import menuChiyaSaathi from "@/assets/menu-chiya-saathi.jpg";
 import menuSnacks from "@/assets/menu-snacks.jpg";
 import menuDessert from "@/assets/menu-dessert.jpg";
 import { useEffect, useId, useRef, useState } from "react";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-const menuImages: Record<string, string> = {
-  "Chiya Saathi": menuChiyaSaathi,
-  "Snacks": menuSnacks,
-  "Dessert": menuDessert,
-};
-
-// Preload every flip-card image as soon as the module loads so the back face
-// is already decoded before the user hovers/taps. Runs only in the browser.
-if (typeof window !== "undefined") {
-  Object.values(menuImages).forEach((src) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.src = src;
-  });
-}
 
 function scrollToId(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
   const el = document.getElementById(id);
@@ -37,219 +20,6 @@ function scrollToId(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
     el.scrollIntoView({ behavior: "smooth", block: "start" });
     history.replaceState(null, "", `#${id}`);
   }
-}
-
-function MenuFlipCard({ cat, items, image }: { cat: string; items: [string, string][]; image: string }) {
-  const [flipped, setFlipped] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  const isMobile = useIsMobile();
-
-  // Warm the browser cache the moment this card mounts so the image is ready
-  // before the first flip, even on slow mobile connections.
-  useEffect(() => {
-    const pre = new Image();
-    pre.decoding = "async";
-    pre.onload = () => setLoaded(true);
-    pre.onerror = () => setFailed(true);
-    pre.src = image;
-  }, [image, attempt]);
-
-  const retry = (e?: React.MouseEvent | React.KeyboardEvent) => {
-    e?.stopPropagation();
-    setFailed(false);
-    setLoaded(false);
-    setAttempt((a) => a + 1);
-  };
-
-  // Cache-bust on retry so a previously-failed request isn't served from cache.
-  const imgSrc = attempt === 0 ? image : `${image}${image.includes("?") ? "&" : "?"}r=${attempt}`;
-
-  return (
-    <div
-      className="perspective-1200 h-[560px] cursor-pointer group select-none"
-      onClick={() => setFlipped((f) => !f)}
-      onMouseEnter={() => { if (!isMobile) setFlipped(true); }}
-      onMouseLeave={() => { if (!isMobile) setFlipped(false); }}
-      role="button"
-      tabIndex={0}
-      aria-pressed={flipped}
-      aria-label={`${cat} — tap to ${flipped ? "see menu" : "see the dish"}`}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setFlipped((f) => !f); } }}
-    >
-      <div className={`relative w-full h-full preserve-3d transition-transform duration-700 ease-out ${flipped ? "rotate-y-180" : ""}`}>
-        {/* FRONT */}
-        <div className="absolute inset-0 backface-hidden rounded-3xl bg-card p-7 shadow-warm border border-border overflow-hidden">
-          <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-secondary/90 text-tea text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 shadow-warm animate-pulse">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-3 w-3" aria-hidden><path d="M9 11V6a3 3 0 1 1 6 0v5"/><path d="M12 11v10"/><path d="M8 17l4 4 4-4"/></svg>
-            Tap to flip
-          </span>
-          <h3 className="font-display text-3xl text-primary italic mb-5 underline decoration-secondary decoration-4 underline-offset-4 pr-24">{cat}</h3>
-          <ul className="divide-y divide-border">
-            {items.map(([name, price]) => (
-              <li key={name} className="flex items-baseline justify-between gap-4 py-2.5">
-                <span className="font-medium">{name}</span>
-                <span className="font-display font-bold text-tea tabular-nums whitespace-nowrap">{price}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        {/* BACK */}
-        <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl overflow-hidden shadow-warm border border-border bg-muted">
-          {/* Skeleton placeholder — visible until the image resolves or fails */}
-          {!loaded && !failed && (
-            <div className="absolute inset-0 bg-gradient-to-br from-muted via-secondary/25 to-muted animate-pulse flex flex-col items-center justify-center gap-3" aria-hidden>
-              <svg className="h-8 w-8 animate-spin text-tea/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="9" opacity="0.25" />
-                <path d="M21 12a9 9 0 0 0-9-9" strokeLinecap="round" />
-              </svg>
-              <span className="font-script text-2xl text-muted-foreground">brewing…</span>
-              <span className="sr-only" role="status" aria-live="polite">Loading {cat} photo</span>
-            </div>
-          )}
-          {/* Error state — offer a retry */}
-          {failed && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-muted p-6 text-center">
-              <span className="font-script text-2xl text-muted-foreground">Couldn't brew this photo.</span>
-              <button
-                type="button"
-                onClick={retry}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); retry(e); } }}
-                className="rounded-full bg-tea px-4 py-2 text-sm font-bold uppercase tracking-widest text-white shadow-warm hover:bg-tea/90 focus-visible:ring-4 focus-visible:ring-secondary"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-          <img
-            key={attempt}
-            src={imgSrc}
-            alt={`${cat} spread`}
-            decoding="async"
-            width={1024}
-            height={1024}
-            onLoad={() => { setLoaded(true); setFailed(false); }}
-            onError={() => setFailed(true)}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${loaded && !failed ? "opacity-100" : "opacity-0"}`}
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <span className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 text-tea text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 shadow-warm">
-            Tap to flip back
-          </span>
-          <div className="absolute inset-x-0 bottom-0 p-7 text-white">
-            <p className="font-script text-2xl text-secondary">served hot</p>
-            <h3 className="font-display text-4xl italic">{cat}</h3>
-            <p className="mt-2 text-white/85 text-sm">Fresh from our garden kitchen.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type GalleryImg = { src: string; alt: string; cls?: string };
-
-function Lightbox({ images, index, onClose, onPrev, onNext }: {
-  images: GalleryImg[]; index: number; onClose: () => void; onPrev: () => void; onNext: () => void;
-}) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const titleId = useId();
-  const descId = useId();
-
-  useEffect(() => {
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    closeBtnRef.current?.focus();
-
-    const getFocusable = () => {
-      if (!dialogRef.current) return [] as HTMLElement[];
-      return Array.from(
-        dialogRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        )
-      ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null);
-    };
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
-      if (e.key === "ArrowLeft") { e.preventDefault(); onPrev(); return; }
-      if (e.key === "ArrowRight") { e.preventDefault(); onNext(); return; }
-      if (e.key === "Tab") {
-        const focusable = getFocusable();
-        if (focusable.length === 0) { e.preventDefault(); return; }
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        const active = document.activeElement as HTMLElement | null;
-        if (e.shiftKey && (active === first || !dialogRef.current?.contains(active))) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && active === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
-      previouslyFocused?.focus?.();
-    };
-  }, [onClose, onPrev, onNext]);
-
-  const img = images[index];
-  return (
-    <div
-      ref={dialogRef}
-      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      aria-describedby={descId}
-    >
-      <h2 id={titleId} className="sr-only">Photo viewer</h2>
-      <p id={descId} className="sr-only">
-        Use the left and right arrow keys to navigate between photos. Press Escape to close.
-      </p>
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        Photo {index + 1} of {images.length}: {img.alt}
-      </div>
-      <button
-        ref={closeBtnRef}
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
-        aria-label="Close photo viewer"
-        className="absolute top-4 right-4 h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); onPrev(); }}
-        aria-label="Previous photo"
-        aria-keyshortcuts="ArrowLeft"
-        className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); onNext(); }}
-        aria-label="Next photo"
-        aria-keyshortcuts="ArrowRight"
-        className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M9 6l6 6-6 6"/></svg>
-      </button>
-      <figure className="relative max-w-[95vw] max-h-[90vh] animate-scale-in" onClick={(e) => e.stopPropagation()}>
-        <img src={img.src} alt={img.alt} className="max-w-[95vw] max-h-[85vh] object-contain rounded-xl shadow-warm" />
-        <figcaption className="mt-3 text-center text-white/80 text-sm">{img.alt} · {index + 1} / {images.length}</figcaption>
-      </figure>
-    </div>
-  );
 }
 
 export const Route = createFileRoute("/")({
@@ -269,44 +39,89 @@ export const Route = createFileRoute("/")({
 const INSTAGRAM = "https://www.instagram.com/chiya_party?igsh=ZXo3d2ZtZ2c4bmxx";
 const FACEBOOK = "https://www.facebook.com/share/1GvxLofNC2/?mibextid=wwXIfr";
 
-const menu = {
-  "Chiya Saathi": [
-    ["Pakoda (Veg / Onion / Paneer)", "100 / 120 / 210"],
-    ["French Fries", "140"],
-    ["Samosa (per plate)", "70"],
-    ["Bhatmas Chiura", "120"],
-    ["Aaloo Chop (4 pcs)", "100"],
-    ["Peanuts Sadheko", "150"],
-    ["Wai Wai Sadheko", "120"],
-    ["Bhatmas Sadheko", "100"],
-    ["Doughnut", "30"],
-  ],
-  "Snacks": [
-    ["Sandwich (Veg / Chicken)", "120 / 160"],
-    ["Wai Wai Soup (Plain / Egg)", "120 / 140"],
-    ["Thukpa (Veg / Egg / Chicken)", "120 / 160 / 180"],
-    ["Keema Noodles (Chicken)", "180"],
-    ["Laphing (Dry / Jhol)", "90 / 100"],
-    ["Paneer Momo (Steam/Fry/Jhol/Chilly)", "170 / 190 / 210 / 230"],
-    ["Chicken Momo (Steam/Fry/Jhol/Chilly)", "170 / 190 / 210 / 230"],
-    ["Chowmein (Veg / Paneer / Chicken)", "120 / 180 / 180"],
-    ["Chicken Sausage (per pc)", "50"],
-    ["Chicken Chilly (Bone / Boneless)", "240 / 260"],
-    ["Chicken Lollipop (6 pcs)", "340"],
-    ["Chicken Choila", "250"],
-    ["Chicken Roast", "200"],
-    ["Chicken Leg (per pc / Full 4 pcs)", "140 / 540"],
-    ["Chicken Buffalo Wings (Half / Full)", "250 / 480"],
-    ["Mushroom Choila", "150"],
-    ["Boiled Egg", "40"],
-    ["Omelet (Plain / Masala)", "80 / 120"],
-  ],
-  "Dessert": [
-    ["Ice Cream (Single / Double Scoop)", "70 / 120"],
-    ["Matka Kulfi", "120"],
-  ],
+/* ---------- Menu data with descriptions & tags ---------- */
+type MenuItem = { name: string; price: string; desc?: string; tag?: string };
+type MenuCategory = {
+  key: string;
+  title: string;
+  tagline: string;
+  hero: string;
+  featured: { name: string; price: string; blurb: string };
+  items: MenuItem[];
 };
 
+const menu: MenuCategory[] = [
+  {
+    key: "chiya-saathi",
+    title: "Chiya Saathi",
+    tagline: "the perfect companions to your cup",
+    hero: menuChiyaSaathi,
+    featured: {
+      name: "Pakoda Trio",
+      price: "NPR 100 – 210",
+      blurb: "Veg, onion, or paneer — golden, crisp, served hot with our house tomato achar. The classic sidekick to a strong chiya.",
+    },
+    items: [
+      { name: "Pakoda", price: "100 / 120 / 210", desc: "Veg · Onion · Paneer", tag: "Signature" },
+      { name: "French Fries", price: "140", desc: "Hand-cut, sea salt" },
+      { name: "Samosa", price: "70", desc: "Per plate, warm masala potato" },
+      { name: "Bhatmas Chiura", price: "120", desc: "Roasted soybeans + beaten rice" },
+      { name: "Aaloo Chop", price: "100", desc: "4 pcs, spiced potato patty" },
+      { name: "Peanuts Sadheko", price: "150", desc: "Zesty, chili-lime tossed", tag: "Spicy" },
+      { name: "Wai Wai Sadheko", price: "120", desc: "The Nepali cult classic" },
+      { name: "Bhatmas Sadheko", price: "100", desc: "Crunchy, tangy, addictive" },
+      { name: "Doughnut", price: "30", desc: "Sweet finish for a chiya break" },
+    ],
+  },
+  {
+    key: "snacks",
+    title: "Snacks & Mains",
+    tagline: "steaming plates from the garden kitchen",
+    hero: menuSnacks,
+    featured: {
+      name: "Chicken Momo",
+      price: "NPR 170 – 230",
+      blurb: "Hand-folded, steamed to order, then finished four ways — steam, fry, jhol, or fiery chilly. Lalitpur's favorite dumpling.",
+    },
+    items: [
+      { name: "Sandwich", price: "120 / 160", desc: "Veg · Chicken", tag: "Quick bite" },
+      { name: "Wai Wai Soup", price: "120 / 140", desc: "Plain · Egg" },
+      { name: "Thukpa", price: "120 / 160 / 180", desc: "Veg · Egg · Chicken", tag: "Warming" },
+      { name: "Keema Noodles", price: "180", desc: "Chicken minced, wok-tossed" },
+      { name: "Laphing", price: "90 / 100", desc: "Dry · Jhol — cold spicy noodles", tag: "Spicy" },
+      { name: "Paneer Momo", price: "170 / 190 / 210 / 230", desc: "Steam · Fry · Jhol · Chilly" },
+      { name: "Chicken Momo", price: "170 / 190 / 210 / 230", desc: "Steam · Fry · Jhol · Chilly", tag: "Signature" },
+      { name: "Chowmein", price: "120 / 180 / 180", desc: "Veg · Paneer · Chicken" },
+      { name: "Chicken Sausage", price: "50", desc: "Per pc, char-grilled" },
+      { name: "Chicken Chilly", price: "240 / 260", desc: "Bone · Boneless", tag: "Spicy" },
+      { name: "Chicken Lollipop", price: "340", desc: "6 pcs, sticky-glazed" },
+      { name: "Chicken Choila", price: "250", desc: "Newari-style smoked" },
+      { name: "Chicken Roast", price: "200", desc: "Marinated, oven-finished" },
+      { name: "Chicken Leg", price: "140 / 540", desc: "Per pc · Full 4 pcs" },
+      { name: "Chicken Buffalo Wings", price: "250 / 480", desc: "Half · Full" },
+      { name: "Mushroom Choila", price: "150", desc: "Smoky, herby, vegetarian" },
+      { name: "Boiled Egg", price: "40" },
+      { name: "Omelet", price: "80 / 120", desc: "Plain · Masala" },
+    ],
+  },
+  {
+    key: "dessert",
+    title: "Sweet Endings",
+    tagline: "a cold finish under the fairy lights",
+    hero: menuDessert,
+    featured: {
+      name: "Matka Kulfi",
+      price: "NPR 120",
+      blurb: "Slow-set cardamom kulfi served in a tiny clay matka — creamy, cold, and impossibly pretty against the garden lights.",
+    },
+    items: [
+      { name: "Ice Cream", price: "70 / 120", desc: "Single · Double scoop" },
+      { name: "Matka Kulfi", price: "120", desc: "Cardamom, clay-pot set", tag: "Signature" },
+    ],
+  },
+];
+
+/* ---------- Icons ---------- */
 function IgIcon({ className = "h-5 w-5" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={className} aria-hidden>
@@ -323,16 +138,250 @@ function FbIcon({ className = "h-5 w-5" }: { className?: string }) {
     </svg>
   );
 }
+function Leaf({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className={className} aria-hidden>
+      <path d="M20 4C10 4 4 10 4 20c8 0 16-6 16-16z" />
+      <path d="M4 20c4-8 10-12 16-16" />
+    </svg>
+  );
+}
 
+/* ---------- Lightbox ---------- */
+type GalleryImg = { src: string; alt: string; cls?: string };
+
+function Lightbox({ images, index, onClose, onPrev, onNext }: {
+  images: GalleryImg[]; index: number; onClose: () => void; onPrev: () => void; onNext: () => void;
+}) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  const descId = useId();
+
+  useEffect(() => {
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    closeBtnRef.current?.focus();
+    const getFocusable = () => {
+      if (!dialogRef.current) return [] as HTMLElement[];
+      return Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.hasAttribute("disabled") && el.offsetParent !== null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
+      if (e.key === "ArrowLeft") { e.preventDefault(); onPrev(); return; }
+      if (e.key === "ArrowRight") { e.preventDefault(); onNext(); return; }
+      if (e.key === "Tab") {
+        const focusable = getFocusable();
+        if (focusable.length === 0) { e.preventDefault(); return; }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const active = document.activeElement as HTMLElement | null;
+        if (e.shiftKey && (active === first || !dialogRef.current?.contains(active))) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && active === last) {
+          e.preventDefault(); first.focus();
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      previouslyFocused?.focus?.();
+    };
+  }, [onClose, onPrev, onNext]);
+
+  const img = images[index];
+  return (
+    <div
+      ref={dialogRef}
+      className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center animate-fade-in"
+      onClick={onClose}
+      role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descId}
+    >
+      <h2 id={titleId} className="sr-only">Photo viewer</h2>
+      <p id={descId} className="sr-only">Use the left and right arrow keys to navigate. Press Escape to close.</p>
+      <div aria-live="polite" aria-atomic="true" className="sr-only">Photo {index + 1} of {images.length}: {img.alt}</div>
+      <button
+        ref={closeBtnRef}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        aria-label="Close photo viewer"
+        className="absolute top-4 right-4 h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); onPrev(); }}
+        aria-label="Previous photo" aria-keyshortcuts="ArrowLeft"
+        className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); onNext(); }}
+        aria-label="Next photo" aria-keyshortcuts="ArrowRight"
+        className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 text-white grid place-items-center transition focus:outline-none focus-visible:ring-4 focus-visible:ring-secondary"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-6 w-6" aria-hidden><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <figure className="relative max-w-[95vw] max-h-[90vh] animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <img src={img.src} alt={img.alt} className="max-w-[95vw] max-h-[85vh] object-contain rounded-xl shadow-warm" />
+        <figcaption className="mt-3 text-center text-white/80 text-sm">{img.alt} · {index + 1} / {images.length}</figcaption>
+      </figure>
+    </div>
+  );
+}
+
+/* ---------- Menu Section (Magazine style) ---------- */
+function MenuSection() {
+  const [active, setActive] = useState(menu[0].key);
+  const current = menu.find((m) => m.key === active) ?? menu[0];
+
+  return (
+    <section id="menu" className="relative py-24 px-5 bg-cream overflow-hidden">
+      {/* Decorative background */}
+      <div className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full bg-gold/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -left-32 h-[28rem] w-[28rem] rounded-full bg-emerald-mid/15 blur-3xl" />
+
+      <div className="relative mx-auto max-w-6xl">
+        {/* Editorial header */}
+        <div className="text-center">
+          <div className="mx-auto w-40 gold-rule" />
+          <p className="mt-4 text-[11px] tracking-[0.4em] uppercase text-emerald-mid">The Menu · est. Chiya Party</p>
+          <h2 className="mt-3 font-display text-5xl sm:text-7xl text-emerald-deep italic leading-none">
+            À la <span className="text-gold not-italic">Garden</span>
+          </h2>
+          <p className="mt-4 font-script text-3xl text-emerald-mid">brewed with care, served with gossip</p>
+          <p className="mt-3 text-sm text-muted-foreground">All prices in NPR · Served fresh, all day</p>
+          <div className="mx-auto mt-6 w-40 gold-rule" />
+        </div>
+
+        {/* Category tabs */}
+        <div className="mt-10 flex flex-wrap justify-center gap-2 sm:gap-3">
+          {menu.map((m) => {
+            const isActive = m.key === active;
+            return (
+              <button
+                key={m.key}
+                type="button"
+                onClick={() => setActive(m.key)}
+                aria-pressed={isActive}
+                className={[
+                  "px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-[0.18em] transition-all",
+                  "focus:outline-none focus-visible:ring-4 focus-visible:ring-gold/50",
+                  isActive
+                    ? "bg-emerald-deep text-cream shadow-warm border border-gold"
+                    : "bg-white/70 text-emerald-deep border border-emerald-deep/15 hover:bg-white hover:border-gold/60",
+                ].join(" ")}
+              >
+                {m.title}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Magazine layout: featured + item column */}
+        <div key={current.key} className="mt-12 grid lg:grid-cols-12 gap-8 lg:gap-12 animate-rise">
+          {/* Featured dish */}
+          <div className="lg:col-span-5">
+            <div className="relative corner-brackets p-3 rounded-[2rem] bg-white/60">
+              <div className="relative overflow-hidden rounded-[1.75rem] shadow-warm">
+                <img
+                  src={current.hero}
+                  alt={current.featured.name}
+                  loading="lazy"
+                  className="w-full aspect-[4/5] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/85 via-emerald-deep/20 to-transparent" />
+                <div className="absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full bg-gold text-emerald-deep text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 shadow-warm">
+                  <Leaf className="h-3 w-3" /> Chef's pick
+                </div>
+                <div className="absolute inset-x-0 bottom-0 p-6 sm:p-7 text-cream">
+                  <p className="font-script text-2xl text-gold">featured today</p>
+                  <h3 className="font-display text-4xl italic leading-tight">{current.featured.name}</h3>
+                  <p className="mt-2 text-cream/85 text-sm sm:text-base leading-relaxed">{current.featured.blurb}</p>
+                  <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-cream/95 text-emerald-deep px-4 py-1.5 text-sm font-bold tabular-nums">
+                    {current.featured.price}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="mt-5 text-center font-script text-2xl text-emerald-mid">{current.tagline}</p>
+          </div>
+
+          {/* Item column */}
+          <div className="lg:col-span-7">
+            <div className="rounded-[1.75rem] bg-white/80 backdrop-blur border border-emerald-deep/10 p-6 sm:p-8 shadow-warm">
+              <div className="flex items-baseline justify-between gap-4 border-b border-gold/40 pb-3">
+                <h3 className="font-display text-3xl sm:text-4xl text-emerald-deep italic">{current.title}</h3>
+                <span className="text-[10px] tracking-[0.3em] uppercase text-emerald-mid whitespace-nowrap">
+                  {current.items.length} items
+                </span>
+              </div>
+
+              <ul className="mt-4 divide-y divide-emerald-deep/10">
+                {current.items.map((item) => (
+                  <li
+                    key={item.name}
+                    className="group py-3.5 grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3 sm:gap-6 transition-colors hover:bg-gold/10 rounded-lg px-2 -mx-2"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                        <span className="font-semibold text-emerald-deep">{item.name}</span>
+                        {item.tag && (
+                          <span className={[
+                            "text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
+                            item.tag === "Spicy"
+                              ? "bg-primary/10 text-primary border border-primary/25"
+                              : item.tag === "Signature"
+                              ? "bg-gold/25 text-emerald-deep border border-gold/60"
+                              : "bg-emerald-mid/10 text-emerald-mid border border-emerald-mid/30",
+                          ].join(" ")}>
+                            {item.tag}
+                          </span>
+                        )}
+                      </div>
+                      {item.desc && (
+                        <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground italic">{item.desc}</p>
+                      )}
+                    </div>
+                    <span className="font-display text-lg text-gold tabular-nums whitespace-nowrap group-hover:text-emerald-deep transition-colors">
+                      {item.price}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-gold/40 pt-4">
+                <p className="text-xs text-muted-foreground">Prices are in Nepalese Rupees · taxes included</p>
+                <a href={menuImg.url} target="_blank" rel="noreferrer"
+                   className="text-xs font-semibold uppercase tracking-widest text-emerald-mid hover:text-emerald-deep transition">
+                  View original card →
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------- Page ---------- */
 function Index() {
   const galleryImages: GalleryImg[] = [
     { src: evening1.url, alt: "Bamboo seating at dusk under string lights", cls: "col-span-2 row-span-2" },
-    { src: thatch.url, alt: "Thatched roof with hanging kerosene lantern", cls: "" },
+    { src: thatch.url, alt: "Thatched roof with hanging kerosene lantern" },
     { src: night1.url, alt: "Guests gathered at night with guitar", cls: "col-span-2" },
-    { src: counter.url, alt: "Chiya counter glowing red at evening", cls: "" },
+    { src: counter.url, alt: "Chiya counter glowing red at evening" },
     { src: evening2.url, alt: "Wrapped tree lights and bamboo fence", cls: "col-span-2" },
-    { src: day.url, alt: "Marigold pots and bamboo garden in daylight", cls: "" },
-    { src: entrance.url, alt: "Yellow gate entrance with Chiya Party banner", cls: "" },
+    { src: day.url, alt: "Marigold pots and bamboo garden in daylight" },
+    { src: entrance.url, alt: "Yellow gate entrance with Chiya Party banner" },
   ];
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const closeLightbox = () => setLightboxIndex(null);
@@ -343,38 +392,41 @@ function Index() {
     <div className="min-h-screen bg-background text-foreground overflow-hidden">
       {/* Top bar */}
       <header className="absolute top-0 left-0 right-0 z-40">
-        <nav className="mx-auto max-w-7xl flex items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-3">
-            <img src={logo.url} alt="Chiya Party logo" className="h-12 w-12 rounded-full bg-white/90 p-1 shadow-warm" />
+        <nav className="mx-auto max-w-7xl grid grid-cols-[auto_1fr_auto] items-center gap-3 px-4 sm:px-5 py-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <img src={logo.url} alt="Chiya Party logo" className="h-11 w-11 sm:h-12 sm:w-12 shrink-0 rounded-full bg-white/95 p-1 shadow-warm" />
             <div className="hidden sm:block brand-highlight brand-breathe cursor-pointer">
-              <div className="font-display font-bold text-lg leading-none text-white brand-glow">Chiya Party</div>
-              <div className="font-script text-secondary text-sm leading-tight brand-glow">कप सँग गफ</div>
+              <div className="font-display font-bold text-lg leading-none text-cream brand-glow">Chiya Party</div>
+              <div className="font-script text-gold text-sm leading-tight brand-glow">कप सँग गफ</div>
             </div>
           </div>
-          <div className="hidden md:flex items-center gap-1 rounded-full px-6 py-2.5 nav-glass backdrop-blur-xl">
-            {[
-              { href: "#story", label: "Our Story" },
-              { href: "#gallery", label: "Gallery" },
-              { href: "#menu", label: "Menu" },
-              { href: "#visit", label: "Visit" },
-            ].map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="relative group px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white/90 transition-all duration-300 hover:text-white"
-              >
-                {link.label}
-                <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-0 nav-glow-line transition-all duration-300 group-hover:w-full group-hover:left-0 rounded-full" />
-              </a>
-            ))}
+          <div className="hidden md:flex justify-center">
+            <div className="flex items-center gap-1 rounded-full px-4 py-2 nav-glass backdrop-blur-xl">
+              {[
+                { href: "#story", label: "Our Story" },
+                { href: "#gallery", label: "Gallery" },
+                { href: "#menu", label: "Menu" },
+                { href: "#visit", label: "Visit" },
+              ].map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => scrollToId(e, link.href.slice(1))}
+                  className="relative group px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-cream/90 transition-all duration-300 hover:text-cream"
+                >
+                  {link.label}
+                  <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-0 nav-glow-line transition-all duration-300 group-hover:w-full group-hover:left-0 rounded-full" />
+                </a>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-self-end">
             <a href={INSTAGRAM} target="_blank" rel="noreferrer" aria-label="Instagram"
-               className="grid place-items-center h-10 w-10 rounded-full bg-warm text-white shadow-warm hover:scale-110 transition">
+               className="grid place-items-center h-10 w-10 rounded-full bg-gold text-emerald-deep shadow-warm hover:scale-110 transition">
               <IgIcon />
             </a>
             <a href={FACEBOOK} target="_blank" rel="noreferrer" aria-label="Facebook"
-               className="grid place-items-center h-10 w-10 rounded-full bg-tea text-white shadow-warm hover:scale-110 transition">
+               className="grid place-items-center h-10 w-10 rounded-full bg-emerald-mid text-cream shadow-warm hover:scale-110 transition">
               <FbIcon />
             </a>
           </div>
@@ -385,51 +437,51 @@ function Index() {
       <section className="relative min-h-[100svh] flex items-center">
         <div className="absolute inset-0">
           <img src={evening1.url} alt="Chiya Party bamboo garden at dusk with fairy lights" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-emerald-deep/50 via-emerald-deep/45 to-background" />
         </div>
 
-        {/* String lights */}
-        <div className="absolute top-20 left-0 right-0 flex justify-around px-6 pointer-events-none">
+        <div className="absolute top-24 left-0 right-0 flex justify-around px-6 pointer-events-none">
           {Array.from({ length: 14 }).map((_, i) => (
-            <span key={i} className="block h-3 w-3 rounded-full bg-secondary shadow-glow animate-bulb" style={{ animationDelay: `${i * 0.2}s` }} />
+            <span key={i} className="block h-3 w-3 rounded-full bg-gold shadow-glow animate-bulb" style={{ animationDelay: `${i * 0.2}s` }} />
           ))}
         </div>
 
         <div className="relative z-10 mx-auto max-w-7xl px-5 py-32 grid md:grid-cols-12 gap-8 items-center w-full">
-          <div className="md:col-span-8 text-white">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur px-4 py-1.5 text-xs uppercase tracking-[0.2em] mb-6 border border-white/20">
-              <span className="h-2 w-2 rounded-full bg-secondary animate-pulse" /> Open daily · Lalitpur
+          <div className="md:col-span-8 text-cream">
+            <div className="inline-flex items-center gap-2 rounded-full bg-cream/10 backdrop-blur px-4 py-1.5 text-[10px] uppercase tracking-[0.3em] mb-6 border border-gold/40">
+              <span className="h-2 w-2 rounded-full bg-gold animate-pulse" /> Open daily · Lalitpur
             </div>
-            <h1 className="font-display text-5xl sm:text-7xl md:text-8xl font-extrabold leading-[0.95]">
+            <h1 className="font-display text-5xl sm:text-7xl md:text-8xl leading-[0.95]">
               Sip slow.<br />
-              <span className="text-secondary italic">Gossip</span> louder.
+              <span className="text-gold italic">Gossip</span> louder.
             </h1>
-            <p className="font-script text-3xl sm:text-5xl text-secondary mt-4">कप सँग गफ</p>
-            <p className="mt-6 max-w-xl text-lg text-white/90">
+            <p className="font-script text-3xl sm:text-5xl text-gold mt-4">कप सँग गफ</p>
+            <p className="mt-6 max-w-xl text-lg text-cream/90 leading-relaxed">
               A bamboo-and-thatch chiya garden where marigolds glow, fairy lights twinkle, and every cup
               comes with a story. Momos, thukpa, sadheko & the warmest chiya in town.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <a href="#menu" className="px-6 py-3 rounded-full bg-warm text-white font-semibold shadow-warm hover:scale-105 transition">
+              <a href="#menu" onClick={(e) => scrollToId(e, "menu")}
+                 className="px-6 py-3 rounded-full bg-gold text-emerald-deep font-bold shadow-warm hover:scale-105 transition">
                 See the Menu
               </a>
               <a href={INSTAGRAM} target="_blank" rel="noreferrer"
-                 className="px-6 py-3 rounded-full bg-white/95 text-tea font-semibold inline-flex items-center gap-2 hover:bg-white transition">
+                 className="px-6 py-3 rounded-full bg-cream/95 text-emerald-deep font-semibold inline-flex items-center gap-2 hover:bg-cream transition">
                 <IgIcon className="h-4 w-4" /> @chiya_party
               </a>
             </div>
           </div>
           <div className="md:col-span-4 hidden md:block">
             <div className="relative">
-              <div className="absolute -inset-6 bg-secondary/30 blur-3xl rounded-full" />
-              <img src={logo.url} alt="" className="relative rounded-full bg-white p-4 shadow-warm" />
+              <div className="absolute -inset-6 bg-gold/30 blur-3xl rounded-full" />
+              <img src={logo.url} alt="" className="relative rounded-full bg-cream p-4 shadow-warm" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Marquee */}
-      <div className="bg-warm text-white py-4 overflow-hidden">
+      <div className="bg-emerald-deep text-gold py-4 overflow-hidden border-y border-gold/30">
         <div className="flex gap-12 whitespace-nowrap font-script text-2xl animate-[scroll_30s_linear_infinite]">
           {Array.from({ length: 2 }).map((_, k) => (
             <div key={k} className="flex gap-12 shrink-0">
@@ -453,8 +505,8 @@ function Index() {
             <img src={counter.url} alt="Chiya counter at night" className="hidden sm:block absolute -bottom-10 -right-8 w-1/2 rounded-3xl shadow-warm border-4 border-background object-cover aspect-square" />
           </div>
           <div>
-            <p className="font-script text-3xl text-primary">est. in good company</p>
-            <h2 className="text-4xl md:text-5xl font-bold mt-2">More than a cup —<br />it's a <span className="text-primary">party</span>.</h2>
+            <p className="font-script text-3xl text-emerald-mid">est. in good company</p>
+            <h2 className="text-4xl md:text-5xl mt-2 text-emerald-deep italic">More than a cup —<br />it's a <span className="text-gold">party</span>.</h2>
             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
               Tucked behind a yellow gate and a curtain of thatch, Chiya Party is where Lalitpur comes
               to slow down. Bamboo benches, marigold pots, hanging lanterns, a guitar in the corner —
@@ -462,9 +514,9 @@ function Index() {
             </p>
             <div className="mt-8 grid grid-cols-3 gap-4 text-center">
               {[["🌿","Garden Seating"],["🪔","Lantern Lit"],["🎶","Acoustic Nights"]].map(([e,t]) => (
-                <div key={t} className="rounded-2xl bg-muted p-5 hover:bg-secondary/30 transition">
+                <div key={t} className="rounded-2xl bg-white/70 border border-emerald-deep/10 p-5 hover:bg-gold/20 hover:border-gold/50 transition">
                   <div className="text-3xl">{e}</div>
-                  <div className="text-sm font-semibold mt-2">{t}</div>
+                  <div className="text-xs font-semibold mt-2 uppercase tracking-widest text-emerald-deep">{t}</div>
                 </div>
               ))}
             </div>
@@ -477,24 +529,24 @@ function Index() {
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           <img src={evening2.url} alt="" className="w-full h-full object-cover" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-black/40" />
-        <div className="relative mx-auto max-w-5xl text-center text-white">
-          <p className="font-script text-3xl sm:text-4xl text-secondary">catch the glow before the cup cools</p>
-          <h2 className="text-3xl sm:text-5xl font-bold mt-2 leading-tight">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-deep/60 via-transparent to-emerald-deep/60" />
+        <div className="relative mx-auto max-w-5xl text-center text-cream">
+          <p className="font-script text-3xl sm:text-4xl text-gold">catch the glow before the cup cools</p>
+          <h2 className="text-3xl sm:text-5xl mt-2 leading-tight italic">
             Watch the garden come alive.<br className="hidden sm:block" /> Scroll the vibes.
           </h2>
-          <p className="mt-4 text-white/90 max-w-2xl mx-auto text-lg">
+          <p className="mt-4 text-cream/90 max-w-2xl mx-auto text-lg">
             Fairy lights, bamboo huts, marigold corners, and the steam rising off every cup —
             see why Lalitpur can't stop talking about Chiya Party.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <a href="#gallery" onClick={(e) => scrollToId(e, "gallery")}
-               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-secondary text-white font-bold text-lg shadow-warm hover:scale-105 transition">
+               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-gold text-emerald-deep font-bold text-lg shadow-warm hover:scale-105 transition">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5" aria-hidden><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" /></svg>
               View the Photos
             </a>
             <a href={INSTAGRAM} target="_blank" rel="noreferrer"
-               className="inline-flex items-center gap-2 px-7 py-4 rounded-full bg-white text-tea font-bold text-lg hover:scale-105 transition">
+               className="inline-flex items-center gap-2 px-7 py-4 rounded-full bg-cream text-emerald-deep font-bold text-lg hover:scale-105 transition">
               <IgIcon className="h-5 w-5" /> Watch on Instagram
             </a>
           </div>
@@ -505,8 +557,10 @@ function Index() {
       <section id="gallery" className="py-24 px-5 bg-sunset">
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-12">
-            <p className="font-script text-3xl text-accent">a peek inside</p>
-            <h2 className="text-4xl md:text-5xl font-bold">The Vibe, Captured</h2>
+            <div className="mx-auto w-32 gold-rule" />
+            <p className="mt-4 font-script text-3xl text-emerald-mid">a peek inside</p>
+            <h2 className="text-4xl md:text-5xl text-emerald-deep italic">The Vibe, Captured</h2>
+            <div className="mx-auto mt-4 w-32 gold-rule" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 auto-rows-[180px] md:auto-rows-[220px]">
             {galleryImages.map((img, i) => (
@@ -515,12 +569,12 @@ function Index() {
                 type="button"
                 onClick={() => setLightboxIndex(i)}
                 aria-label={`Open image: ${img.alt}`}
-                className={`group relative overflow-hidden rounded-2xl shadow-warm text-left focus:outline-none focus:ring-4 focus:ring-secondary/60 ${img.cls}`}
+                className={`group relative overflow-hidden rounded-2xl shadow-warm text-left focus:outline-none focus:ring-4 focus:ring-gold/60 ${img.cls ?? ""}`}
               >
                 <img src={img.src} alt={img.alt} loading="lazy"
                      className="h-full w-full object-cover transition duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition" />
-                <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-white/90 text-tea text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 opacity-0 group-hover:opacity-100 transition">
+                <div className="absolute inset-0 bg-gradient-to-t from-emerald-deep/70 to-transparent opacity-0 group-hover:opacity-100 transition" />
+                <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-gold text-emerald-deep text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 opacity-0 group-hover:opacity-100 transition">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3 w-3"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg>
                   View
                 </span>
@@ -529,7 +583,7 @@ function Index() {
           </div>
           <div className="text-center mt-10">
             <a href={INSTAGRAM} target="_blank" rel="noreferrer"
-               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-warm text-white font-semibold shadow-warm hover:scale-105 transition">
+               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-deep text-cream font-semibold shadow-warm hover:scale-105 transition">
               <IgIcon /> See more on Instagram
             </a>
           </div>
@@ -537,57 +591,42 @@ function Index() {
       </section>
 
       {/* MENU */}
-      <section id="menu" className="py-24 px-5">
-        <div className="mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <p className="font-script text-3xl text-primary">what's brewing</p>
-            <h2 className="text-4xl md:text-5xl font-bold">The Menu</h2>
-            <p className="mt-3 text-muted-foreground">All prices in NPR · Served fresh, all day</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {Object.entries(menu).map(([cat, items]) => (
-              <MenuFlipCard key={cat} cat={cat} items={items as [string, string][]} image={menuImages[cat]} />
-            ))}
-          </div>
-          <p className="mt-6 text-center text-sm text-muted-foreground">👆 Tap any card to flip and see the dish.</p>
-          <div className="mt-10 text-center">
-            <a href={menuImg.url} target="_blank" rel="noreferrer"
-               className="text-sm font-medium text-primary hover:underline">View original menu card →</a>
-          </div>
-        </div>
-      </section>
+      <MenuSection />
 
       {/* VISIT */}
-      <section id="visit" className="relative py-24 px-5 bg-tea text-white overflow-hidden">
+      <section id="visit" className="relative py-24 px-5 bg-emerald-deep text-cream overflow-hidden">
         <div className="absolute inset-0 opacity-20">
           <img src={night1.url} alt="" className="w-full h-full object-cover" />
         </div>
         <div className="relative mx-auto max-w-5xl text-center">
-          <p className="font-script text-3xl text-secondary">come on by</p>
-          <h2 className="text-4xl md:text-6xl font-bold mt-2">Find Your Seat at the Garden</h2>
-          <p className="mt-5 text-white/80 max-w-2xl mx-auto">
+          <p className="font-script text-3xl text-gold">come on by</p>
+          <h2 className="text-4xl md:text-6xl mt-2 italic">Find Your Seat at the Garden</h2>
+          <p className="mt-5 text-cream/80 max-w-2xl mx-auto">
             Pull up a bamboo stool, order a chiya, and stay a while. Best enjoyed at dusk when the
             lanterns flicker on.
           </p>
           <div className="mt-10 grid sm:grid-cols-3 gap-5 text-left">
-            <div className="rounded-2xl bg-white/10 backdrop-blur p-6 border border-white/15">
-              <div className="text-secondary text-xs uppercase tracking-widest">Hours</div>
+            <div className="rounded-2xl bg-cream/10 backdrop-blur p-6 border border-gold/30">
+              <div className="text-gold text-[10px] uppercase tracking-[0.3em]">Hours</div>
               <div className="mt-2 font-display text-xl">Daily · 8am – 10pm</div>
             </div>
-            <div className="rounded-2xl bg-white/10 backdrop-blur p-6 border border-white/15">
-              <div className="text-secondary text-xs uppercase tracking-widest">Where</div>
+            <div className="rounded-2xl bg-cream/10 backdrop-blur p-6 border border-gold/30">
+              <div className="text-gold text-[10px] uppercase tracking-[0.3em]">Where</div>
               <div className="mt-2 font-display text-xl">Lalitpur, Nepal</div>
             </div>
-            <div className="rounded-2xl bg-white/10 backdrop-blur p-6 border border-white/15">
-              <div className="text-secondary text-xs uppercase tracking-widest">Follow</div>
-              <div className="mt-2 flex gap-3">
-                <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold hover:text-secondary">
+            <div className="rounded-2xl bg-cream/10 backdrop-blur p-6 border border-gold/30">
+              <div className="text-gold text-[10px] uppercase tracking-[0.3em]">Follow</div>
+              <div className="mt-2 flex flex-col gap-2">
+                <a href={INSTAGRAM} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold hover:text-gold">
                   <IgIcon /> @chiya_party
+                </a>
+                <a href={FACEBOOK} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 font-semibold hover:text-gold">
+                  <FbIcon /> Facebook
                 </a>
               </div>
             </div>
           </div>
-          <div className="mt-12 rounded-3xl overflow-hidden border border-white/15 shadow-warm">
+          <div className="mt-12 rounded-3xl overflow-hidden border border-gold/30 shadow-warm">
             <iframe
               title="Chiya Party location map"
               src="https://maps.google.com/maps?q=M8Q3%2B2W6%2C%20Lalitpur%2044600%2C%20Nepal&t=&z=17&ie=UTF8&iwloc=&output=embed"
@@ -599,15 +638,15 @@ function Index() {
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <a href="https://www.google.com/maps/dir/?api=1&destination=M8Q3%2B2W6%2C%20Lalitpur%2044600%2C%20Nepal"
                target="_blank" rel="noreferrer"
-               className="px-7 py-3 rounded-full bg-warm font-semibold shadow-warm hover:scale-105 transition inline-flex items-center gap-2">
+               className="px-7 py-3 rounded-full bg-gold text-emerald-deep font-bold shadow-warm hover:scale-105 transition inline-flex items-center gap-2">
               🗺️ Get Directions
             </a>
             <a href={INSTAGRAM} target="_blank" rel="noreferrer"
-               className="px-7 py-3 rounded-full bg-white text-tea font-semibold hover:scale-105 transition inline-flex items-center gap-2">
+               className="px-7 py-3 rounded-full bg-cream text-emerald-deep font-semibold hover:scale-105 transition inline-flex items-center gap-2">
               <IgIcon /> Instagram
             </a>
             <a href={FACEBOOK} target="_blank" rel="noreferrer"
-               className="px-7 py-3 rounded-full bg-white text-tea font-semibold hover:scale-105 transition inline-flex items-center gap-2">
+               className="px-7 py-3 rounded-full bg-cream text-emerald-deep font-semibold hover:scale-105 transition inline-flex items-center gap-2">
               <FbIcon /> Facebook
             </a>
           </div>
@@ -617,22 +656,14 @@ function Index() {
       <footer className="py-10 px-5 bg-background text-center text-sm text-muted-foreground space-y-2">
         <div className="flex flex-col items-center justify-center gap-1">
           <img src={logo.url} alt="" className="h-10 w-10 rounded-full bg-white p-1 mb-2" />
-          <div className="font-display font-bold text-tea text-lg">Chiya Party</div>
-          <div className="font-script text-secondary text-lg">कप सँग गफ</div>
+          <div className="font-display text-emerald-deep text-lg">Chiya Party</div>
+          <div className="font-script text-gold text-lg">कप सँग गफ</div>
         </div>
-        <div className="pt-2">
-          © 2026 Chiya Party · Made with chiya & love in Lalitpur
-        </div>
+        <div className="pt-2">© 2026 Chiya Party · Made with chiya & love in Lalitpur</div>
       </footer>
 
       {lightboxIndex !== null && (
-        <Lightbox
-          images={galleryImages}
-          index={lightboxIndex}
-          onClose={closeLightbox}
-          onPrev={prevImg}
-          onNext={nextImg}
-        />
+        <Lightbox images={galleryImages} index={lightboxIndex} onClose={closeLightbox} onPrev={prevImg} onNext={nextImg} />
       )}
     </div>
   );

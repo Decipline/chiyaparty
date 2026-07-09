@@ -23,40 +23,42 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
-  --font-display: "Fraunces", serif;
-  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-display: "DM Serif Display", serif;
+  --font-body: "Fira Sans", sans-serif;
   --font-script: "Caveat", cursive;
 }
 
 :root {
   --radius: 1rem;
-  /* Warm chai-house palette: cream, terracotta, marigold, bamboo, deep tea */
-  --background: oklch(0.97 0.03 80);
-  --foreground: oklch(0.25 0.05 40);
-  --card: oklch(0.99 0.02 85);
-  --card-foreground: oklch(0.25 0.05 40);
-  --primary: oklch(0.62 0.18 45);            /* terracotta */
-  --primary-foreground: oklch(0.99 0.02 85);
-  --secondary: oklch(0.78 0.16 75);          /* marigold */
-  --secondary-foreground: oklch(0.25 0.05 40);
-  --accent: oklch(0.55 0.15 25);             /* deep brick */
-  --accent-foreground: oklch(0.99 0.02 85);
-  --muted: oklch(0.93 0.03 80);
-  --muted-foreground: oklch(0.45 0.06 50);
-  --border: oklch(0.85 0.05 70);
-  --ring: oklch(0.62 0.18 45);
-  --tea: oklch(0.42 0.09 50);
-  --bamboo: oklch(0.72 0.10 95);
-  --leaf: oklch(0.55 0.12 145);
+  /* Emerald Prestige — deep emerald, mid emerald, gold, cream */
+  --background: oklch(0.95 0.03 90);         /* cream #f5f0e0 */
+  --foreground: oklch(0.32 0.08 165);        /* deep emerald text */
+  --card: oklch(0.98 0.015 90);
+  --card-foreground: oklch(0.32 0.08 165);
+  --primary: oklch(0.32 0.08 165);           /* deep emerald #064e3b */
+  --primary-foreground: oklch(0.96 0.03 90);
+  --secondary: oklch(0.75 0.12 85);          /* gold #c9a84c */
+  --secondary-foreground: oklch(0.32 0.08 165);
+  --accent: oklch(0.50 0.10 165);            /* mid emerald #0d7a5f */
+  --accent-foreground: oklch(0.96 0.03 90);
+  --muted: oklch(0.92 0.03 90);
+  --muted-foreground: oklch(0.45 0.05 165);
+  --border: oklch(0.85 0.04 100);
+  --ring: oklch(0.75 0.12 85);
+  --tea: oklch(0.32 0.08 165);
+  --emerald-deep: oklch(0.32 0.08 165);
+  --emerald-mid: oklch(0.50 0.10 165);
+  --gold: oklch(0.75 0.12 85);
+  --cream: oklch(0.95 0.03 90);
 
-  --gradient-warm: linear-gradient(135deg, oklch(0.78 0.16 75) 0%, oklch(0.62 0.18 45) 50%, oklch(0.55 0.15 25) 100%);
-  --gradient-sunset: linear-gradient(180deg, oklch(0.92 0.10 85) 0%, oklch(0.78 0.16 60) 100%);
-  --shadow-warm: 0 20px 50px -15px color-mix(in oklab, oklch(0.55 0.15 25) 45%, transparent);
-  --shadow-glow: 0 0 60px color-mix(in oklab, oklch(0.78 0.16 75) 50%, transparent);
-  --nav-glass-bg: color-mix(in oklab, white 5%, transparent);
-  --nav-glass-border: color-mix(in oklab, white 10%, transparent);
-  --nav-glass-shadow: 0 25px 50px -12px color-mix(in oklab, black 50%, transparent);
-  --nav-glow-line: color-mix(in oklab, var(--secondary) 60%, transparent);
+  --gradient-warm: linear-gradient(135deg, oklch(0.75 0.12 85) 0%, oklch(0.50 0.10 165) 55%, oklch(0.32 0.08 165) 100%);
+  --gradient-sunset: linear-gradient(180deg, oklch(0.95 0.03 90) 0%, oklch(0.90 0.05 90) 100%);
+  --shadow-warm: 0 24px 60px -18px color-mix(in oklab, oklch(0.32 0.08 165) 55%, transparent);
+  --shadow-glow: 0 0 60px color-mix(in oklab, oklch(0.75 0.12 85) 50%, transparent);
+  --nav-glass-bg: color-mix(in oklab, white 6%, transparent);
+  --nav-glass-border: color-mix(in oklab, oklch(0.75 0.12 85) 25%, transparent);
+  --nav-glass-shadow: 0 25px 50px -12px color-mix(in oklab, black 45%, transparent);
+  --nav-glow-line: color-mix(in oklab, var(--secondary) 65%, transparent);
 }
 
 @layer base {
@@ -65,38 +67,49 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
   }
-  h1,h2,h3,h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1,h2,h3,h4 { font-family: var(--font-display); letter-spacing: -0.01em; }
+  ::selection { background: var(--secondary); color: var(--primary); }
 }
 
 @utility bg-warm { background: var(--gradient-warm); }
 @utility bg-sunset { background: var(--gradient-sunset); }
+@utility bg-emerald-deep { background-color: var(--emerald-deep); }
+@utility bg-emerald-mid { background-color: var(--emerald-mid); }
+@utility bg-gold { background-color: var(--gold); }
+@utility bg-cream { background-color: var(--cream); }
+@utility text-gold { color: var(--gold); }
+@utility text-emerald-deep { color: var(--emerald-deep); }
+@utility text-emerald-mid { color: var(--emerald-mid); }
+@utility text-cream { color: var(--cream); }
+@utility border-gold { border-color: var(--gold); }
 @utility shadow-warm { box-shadow: var(--shadow-warm); }
 @utility shadow-glow { box-shadow: var(--shadow-glow); }
 @utility font-script { font-family: var(--font-script); }
+@utility font-display { font-family: var(--font-display); }
 @utility text-tea { color: var(--tea); }
 @utility bg-tea { background-color: var(--tea); }
-@utility text-leaf { color: var(--leaf); }
+
 @utility brand-glow {
-  text-shadow: 0 0 16px color-mix(in oklab, var(--secondary) 80%, transparent),
-               0 0 32px color-mix(in oklab, var(--secondary) 45%, transparent),
-               0 2px 4px color-mix(in oklab, black 35%, transparent);
+  text-shadow: 0 0 14px color-mix(in oklab, var(--gold) 65%, transparent),
+               0 0 28px color-mix(in oklab, var(--gold) 35%, transparent),
+               0 2px 4px color-mix(in oklab, black 40%, transparent);
 }
 @utility brand-highlight {
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  background: color-mix(in oklab, var(--accent) 75%, transparent);
-  box-shadow: 0 0 24px color-mix(in oklab, var(--secondary) 35%, transparent),
+  background: color-mix(in oklab, var(--emerald-deep) 80%, transparent);
+  border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent);
+  box-shadow: 0 0 24px color-mix(in oklab, var(--gold) 35%, transparent),
               inset 0 1px 1px color-mix(in oklab, white 15%, transparent);
   transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 .brand-highlight:hover {
-  transform: scale(1.06);
-  box-shadow: 0 0 36px color-mix(in oklab, var(--secondary) 60%, transparent),
+  transform: scale(1.05);
+  box-shadow: 0 0 36px color-mix(in oklab, var(--gold) 60%, transparent),
               inset 0 1px 1px color-mix(in oklab, white 25%, transparent);
-  background: color-mix(in oklab, var(--accent) 90%, transparent);
 }
-
 
 @keyframes brand-breathe {
   0%, 100% { transform: translateY(0) scale(1); filter: brightness(1); }
@@ -116,23 +129,41 @@
   box-shadow: 0 0 10px var(--nav-glow-line);
 }
 
-
-
 @keyframes float-bulb {
   0%,100% { opacity: 0.85; transform: translateY(0); }
   50% { opacity: 1; transform: translateY(-3px); }
 }
 @utility animate-bulb { animation: float-bulb 3s ease-in-out infinite; }
 
-@keyframes steam {
-  0% { opacity: 0; transform: translateY(0) scaleX(1); }
-  50% { opacity: 0.6; }
-  100% { opacity: 0; transform: translateY(-30px) scaleX(1.4); }
+@keyframes rise-in {
+  0% { opacity: 0; transform: translateY(18px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
-@utility animate-steam { animation: steam 2.5s ease-out infinite; }
+@utility animate-rise { animation: rise-in 0.9s ease-out both; }
 
-/* Flip card (menu) */
-@utility perspective-1200 { perspective: 1200px; }
-@utility preserve-3d { transform-style: preserve-3d; }
-@utility backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-@utility rotate-y-180 { transform: rotateY(180deg); }
+/* Ornamental gold hairline for section headers */
+@utility gold-rule {
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  height: 1px;
+}
+
+/* Decorative corner brackets */
+@utility corner-brackets {
+  position: relative;
+}
+.corner-brackets::before,
+.corner-brackets::after {
+  content: "";
+  position: absolute;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-color: var(--gold);
+}
+.corner-brackets::before {
+  top: -1px; left: -1px;
+  border-top: 2px solid; border-left: 2px solid;
+}
+.corner-brackets::after {
+  bottom: -1px; right: -1px;
+  border-bottom: 2px solid; border-right: 2px solid;
+}
